@@ -138,5 +138,36 @@ Dieses Repository ist als **öffentliche Weitergabe-Version** konzipiert – es 
 
 ---
 
+## Über dieses Projekt
+
+**PsychKG Bereitschaftsplaner NRW** – eine webbasierte Anwendung für die mehrjährige Dienstplanung von Bereitschaftsdiensten nach dem Gesetz über Hilfen und Schutzmaßnahmen bei psychischen Krankheiten (PsychKG NRW) in Nordrhein-Westfalen.
+
+### Kernbotschaft
+Die App ermöglicht es Kommunen, Einsatzgemeinschaften und Ordnungsämtern, Bereitschaftspläne über mehrere Jahre hinweg automatisiert zu erstellen, zu verwalten und dienstlich abzubilden – vollständig dezentral, ohne externe Cloud-Dienste oder Datenbank-Server. Alle Daten bleiben lokal auf dem Server des Auftragsinhabers, was die Anwendung DSGVO-konform und unabhängig von Drittanbietern macht.
+
+### Funktionale Schwerpunkte
+- **Mehrjahresplanung**: Automatische Erstellung von Bereitschaftswochen von aktuell bis +5 Jahre ahead, inklusive Halbjahres-Auswahl und -Kombination
+- **Schichtmodelle**: Konfigurierbare Bereitschaftswechseltage (Mo–So), Innendienst-Regeln, 24/7-Modus
+- **Tauschmanagement**: Marktplatz für Tauschangebote mit Admin-Genehmigung und Historie
+- **Abwesenheitsmanagement**: Erfassung von Urlaub und Krankheit pro Mitarbeiter, Berücksichtigung im Dienstplan
+- **Auswertungen**: Leistungsfähige Netto-Stunden-Auswertung (jährlich, Halbjahr) als PDF oder CSV
+- **Versiegelung**: Monats- oder Halbjahres-Nachweise mit Hash-Wert für nachweislich unveränderbare Dokumentation
+
+### Zielgruppen
+- Kommunen und Landkreise in NRW gemäß PsychKG NRW
+- Einsatzgemeinschaften und Feuerwehrverbände
+- Kommunale IT-Abteilungen und Verwaltungsdigitalisierungs-Verantwortliche
+
+### Lizenz & Verbreitung
+Die Software wird unter **proprietärer Lizenz** vertrieben (siehe `composer.json`). Der Quellcode ist öffentlich auf GitHub verfügbar, um Evaluierung, Prüfung und individuelle Anpassung zu ermöglichen. Für den produktiven Einsatz und individuelle Erweiterungen steht direkter Kontakt zur Verfügung (dario@jozic.de).
+
+### Nächste Schritte
+- Repository klonen und wie in der Schnellstart-Anleitung einrichten
+- Eigene `config.local.php` mit individuellem Datenverzeichnis anlegen
+- Über Admin-Tab **Einstellungen** die eigenen Einsatzzeiten konfigurieren
+- Bei Interesse an einer produktiven Instanz oder kommerziellen Vereinbarung direkten Kontakt aufnehmen
+
+---
+
 © **Dario Jozic** / PsychKG Bereitschaftsplaner, 2026  
 Erstellt als öffentliche Weitergabe für Einsatzgemeinschaften und Verwaltungen nach PsychKG NRW.
