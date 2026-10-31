@@ -1,6 +1,6 @@
 ﻿# PsychKG Bereitschaftsplaner
 
-**Bereitschaftsplanung, Tauschmanagement und Abrechnung für Einsatzgemeinschaften.**
+**Einsatzplanung für den Bereitschaftsdienst des Ordnungsamtes nach PsychKG NRW**
 
 Entwickelt und gepflegt von **Dario Jozic** – E-Mail: **dario@jozic.de**
 
@@ -8,113 +8,135 @@ Entwickelt und gepflegt von **Dario Jozic** – E-Mail: **dario@jozic.de**
 
 ## Was ist diese Software?
 
-Der PsychKG Bereitschaftsplaner ist eine webbasierte Anwendung zur Planung von Bereitschaftsdiensten für gemeinnützige Einsatzgemeinschaften (z. B. Feuerwehr, Rettung, Katastrophenschutz, Pflegebereitschaft). Die App ermöglicht es einer Gemeinschaft, Dienstpläne über mehrere Jahre zu erstellen, zu verwalten und zu dokumentieren – ohne externe Dienste oder Cloud-Abhängigkeit.
+Der **PsychKG Bereitschaftsplaner** ist eine webbasierte Anwendung für die Planung von Bereitschaftsdiensten von Einsatzgemeinschaften im Sinne des **Gesetzes über Hilfen und Schutzmaßnahmen bei psychischen Krankheiten (PsychKG NRW)**. 
 
-Die Anwendung läuft als reine PHP-Anwendung (PHP 8.x) mit lokalen JSON-Daten und benötigt **kein** Composer oder Datenbank-Server.
+Die Anwendung unterstützt Kommunen und Einsatzvereine dabei, **Bereitschaftspläne** über mehrere Jahre zu erstellen, zu verwalten und dienstlich abzubilden – vollständig dezentral, ohne externe Cloud-Dienste oder Datenbank-Server. Die App ist ein reines PHP-Tool mit lokalen JSON-Dateien als Datenspeicher.
+
+Der Begriff **PsychKG** in diesem Kontext bezieht sich nicht auf die Diagnose psychischer Erkrankungen – die App verwaltet vielmehr die **dienstlichen Abläufe** (Bereitschaftswechsel, Innendienst, Tauschangebote), die im Rahmen der kommunalen Gefahrenabwehr nach PsychKG NRW anfallen (Bereitschaftsdienste des Ordnungsamtes, Unterstützung des Rettungsdienstes, Einsatzplanung bei psychisch-kranken Personen).
 
 ---
 
 ## Was kann die App?
 
-### Kernfunktionen
+### Kernfunktionen für die kommunale Einsatzplanung
 
-- **Dienstplan-Generator** (Admin): Automatische Erstellung von Bereitschaftswochen, Mehrjahresplanung (aktuelles Jahr bis +5), Halbjahres-Auswahl.
+- **Dienstplan-Generator** (Admin): Automatische Erstellung von Bereitschaftswochen, **Mehrjahresplanung** (aktuelles Jahr bis +5), Halbjahres-Auswahl und -Kombination.
 - **Konfigurierbare Einsatzzeiten** (Admin → Tab *Einstellungen*):
-  - Bereitschaftswechsels (Wochentag + Uhrzeit)
-  - Innendienst (aktiv/deaktiviert, Beginn/Ende, Freitag-Ende, Innendienst-Tage)
-  - 24/7-Modus möglich (Innendienst deaktiviert)
-- **Dashboard** (für alle Mitarbeiter): Übersicht der eigenen Dienste, Tausch-Historie, Filter, Live-Widget mit Telefonnummer des aktuellen Diensthabenden.
-- **Tauschmanagement (Marktplatz)**: Tauschangebote erstellen, genehmigen/ablehnen, Historie.
-- **Abwesenheiten**: Urlaub / Krankheit pro Mitarbeiter, Planungsberücksichtigung.
-- **Abrechnung / Stunden**: Netto-Bereitschaftsstunden, Jahres-Fairness, Export als PDF / CSV.
-- **Nachweise / Versiegelung**: Monats- oder Halbjahres-Nachweise mit Hash-Verifikation (Unveränderbarkeit nachgewiesen).
-- **Sicherheits-Features**: CSRF-Schutz, Rate-Limit, lokale Webfonts (DSGVO), CSP-Header, Session-Cookie-Sicherheitsflags.
+  - Bereitschaftswechsels (Wochentag 1–7 + Uhrzeit HH:MM – Beginn des Bereitschaftsdienstes / Dienstwechsels)
+  - Innendienst (aktiv/deaktiviert, Beginn/Ende Mo–Do, Beginn/Ende Fr, Innendienst-Tage Default Mo–Fr)
+  - **24/7-Modus** möglich (Innendienst komplett deaktiviert → reine Bereitschaft)
+- **Dashboard** (für alle angemeldeten Mitarbeiter): eigene Dienstübersicht, Tausch-Historie, Filter in der Übersicht, eigenes Passwort ändern, Live-Widget mit Telefonnummer des aktuell diensthabenden Kollegen.
+- **Tauschmanagement (Marktplatz)**: Tauschangebote erstellen, Genehmigungen/ablehnen durch Admins, Historie der abgelehnten/angenommenen Tausche.
+- **Abwesenheiten**: Urlaub und Krankheit pro Mitarbeiter erfassen, Berücksichtigung im Dienstplan.
+- **Abrechnung / Stunden-Auswertung**: Leistungsfähige Netto-Stunden-Auswertung (jährlich, Halbjahr), Export als **PDF** oder **CSV**.
+- **Nachweise / Versiegelung**: Monats- oder Halbjahres-Nachweise mit Hash-Wert (nachweislich unveränderbarer Dienstplan).
+- **Export-Funktionen**: `export_pdf.php`, `export_schedule_pdf.php`, `export_ics.php` (iCal für Kalender-Import).
+- **Sicherheits-Features**: CSRF-Schutz auf allen POST-Endpunkten, Rate-Limit pro IP, lokale Webfonts (kein Google-CDN, DSGVO-konform), CSP-Header (Content-Security-Policy), Session-Cookie-Sicherheitsflags (Secure, HttpOnly), Logout via POST mit CSRF-Token.
 
 ---
 
-## Inhalt dieses Repositories
+## Inhalt dieses öffentlichen Repositories
 
-Dieses Repository enthält **nur Demo- und Beispiel-Daten** sowie den vollständigen App-Code zur Weitergabe.
+Dieses Repository stellt **öffentlich zur Verfügung**, damit andere Einsatzgemeinschaften oder Verwaltungen die App prüfen, testen und für eigene Zwecke adaptieren können.
 
-- **PHP-Code:** `public/`, `src/`, `templates/`, `tests/`
-- **Demo-Daten:** `data/*.example.json` (Platzhalter für Benutzer, Dienstpläne, Abwesenheiten, Tausche, Nachweise, Protokoll)
-- **Installation:** `public/install.php` erzeugt bei erster Nutzung Demo-Benutzer (1 Admin + 3 Mitarbeiter) mit Zufallspasswörtern
+### Enthalten
 
-> ⚠️ **Hinweis:** Die enthaltenen Daten (`users.example.json` etc.) sind ausschließlich **fiktive Beispiele** mit Platzhalter-Namen und Beispiel-E-Mail-Adressen (z. B. `m.muster@beispiel.de`). Es sind **keine** realen Personen oder Einsatzgemeinschaften enthalten.
+- **PHP-Code:** `public/`, `src/`, `templates/`, `tests/` – komplette Applikation
+- **Beispiel-Daten:** `data/*.example.json` – reine Platzhalter-Dateien (fiktive Nutzernamen, leere Strukturen – **keine echten Personen oder Einsatzdaten**)
+- **Konfiguration:** `config.local.example.php` – zeigt nur Beispiel-Pfade, keine Server-Geheimnisse
+- **Handover-Text:** `HANDOVER.md` – Anleitung für die Weitergabe an eine neue Gemeinde
+
+### Nicht enthalten
+
+- Keine echten `data/*.json` mit Personen- oder Einsatzdaten (wurden aus `.gitignore` ausgeschlossen)
+- Keine Server-Pfade, keine echten Passwörter, keine internen Konfigurationen
+
+> ⚠️ **Hinweis:** Das Repository wurde so aufbereitet, dass **keine personenbezogenen Daten** enthalten sind. Alle `users.example.json`-Einträge sind fiktive Beispiel-Daten (z. B. Name „Max Muster", E-Mail `m.muster@beispiel.de`).
+
+---
+
+## Einsatz nach PsychKG NRW – Was das bedeutet
+
+Die App wurde im Kontext des **PsychKG NRW** entwickelt – dem Gesetz über Hilfen und Schutzmaßnahmen bei psychischen Krankheiten im Land Nordrhein-Westfalen. Kernpunkte, die im Planungskontext relevant sind:
+
+- Der **Bereitschaftsdienst des Ordnungsamtes** ist im Rahmen der Gefahrenabwehr einzurichten (§ 11 PsychKG NRW).
+- **Bereitschaftswechsel** und **Innendienst** sind die klassischen Schicht-Organisations-Elemente, die diese App abbildet.
+- Die App unterstützt bei der **Planung und Dokumentation** dieser Dienste (Dienstplan, Nachweise, Stundenabrechnung).
+- **Feiertagsregelung**: Das integrierte Modell ist an NRW angepasst (11 Feiertage). Für andere Bundesländer müssten ggf. eigene Feiertage nachgerüstet werden.
+- Das Gesetz verpflichtet die Kommunen, ** Sozialpsychiatrische Dienste** vorzuhalten – die App kann als organisatorisches Werkzeug hierfür eingesetzt werden.
+
+Die Software löst **keine** rechtlichen Fragestellungen und ersetzt keine Fachberatung – sie dient der reinen **Verwaltung der dienstlichen Abläufe**.
 
 ---
 
 ## Schnellstart (lokale Einrichtung)
 
 ```powershell
+# Repo klonen
 git clone https://github.com/dajo77/PsychKG-Planer-NRW.git
 cd PsychKG-Planer-NRW
-# Beispiel-Daten als echte Dateien kopieren (nur für lokale Tests)
+
+# Beispiel-Daten für lokale Tests kopieren
 copy data\users.example.json data\users.json
 copy data\schedule.example.json data\schedule.json
 copy data\trades.example.json data\trades.json
 copy data\audit.example.json data\audit.json
-# Oder einfach über den Browser: public/install.php aufrufen
+copy data\snapshots.example.json data\snapshots.json
+
+# Über Browser installieren (erst mit allow_install = true in config.local.php!)
+# public/install.php aufrufen → Demo-Benutzer (1 Admin + 3 Mitarbeiter) erstellt
+# Nach erfolgreichem Login: install.php löschen, allow_install auf false setzen
 ```
 
-Online-Installation über `public/install.php` (nur mit `allow_install = true` in `config.local.php`). Das Script löscht sich nach erfolgreicher Installation automatisch (`@unlink`).
+Alternativ Online-Installation:
+- `public/install.php` aufrufen (nur, wenn `['allow_install' => true]` in `config.local.php` gesetzt ist)
+- Script erzeugt Demo-Daten und löscht sich danach selbst (`@unlink`)
 
 ---
 
 ## Systemvoraussetzungen
 
-- PHP 8.4 (oder höher, mindestens 8.1)
-- Webserver mit PHP-Unterstützung (nginx / Apache)
-- Keine Datenbank erforderlich (JSON-Dateien als Speicher)
-- Keine Composer-Abhängigkeiten (reines PHP, autoload via `bootstrap.php`)
-- Schriftarten lokal (keine externen CDN-Anfragen)
+- **PHP** 8.4 (oder höher, mindestens 8.1)
+- **Webserver** mit PHP-Unterstützung (Apache2 / nginx / IIS)
+- **Keine Datenbank** erforderlich (Speicherung via JSON-Dateien)
+- **Keine Composer-Abhängigkeiten** (autoload via `bootstrap.php`, Stand-alonefähig)
+- **Schriftarten** liegen lokal unter `public/assets/fonts/` (keine externen CDN-Requests → DSGVO-konform)
 
 ---
 
-## Einsatzzeiten – Konfigurierbar
+## Einrichtung für eine neue Einsatzgemeinde
 
-Die App ist nicht auf ein einzelnes Bundesland festgelegt – nur die **Default-Einstellungen** folgen dem NRW-Modell:
-
-- Bereitschaftswechsels: **Mittwoch 16:00 Uhr**
-- Innendienst: **Mo–Do 08:00–16:00 Uhr**, **Fr 08:00–12:00 Uhr**
-
-Über den Admin-Tab **Einstellungen** können Gemeinden eigene Zeiten einstellen (z. B. Montag 22:00 Uhr, Fr 08:00–14:00 Uhr). Innendienst kann auch komplett deaktiviert werden (24/7-Bereitschaft).
-
-> Hinweis: Das Feiertagsmodell ist aktuell an NRW gebunden. Für andere Regionen müssten ggf. eigene Feiertagsregelungen ergänzt werden.
-
----
-
-## Sicherheit & Datenschutz
-
-- **Daten bleiben lokal** – JSON-Dateien außerhalb des Document-Roots empfohlen (`config.local.php` mit `data_dir`)
-- **Install-Gate** – `public/install.php` ist standardmäßig inaktiv (`allow_install = false`) und löschbar
-- **CSRF** – alle POST-Aktionen mit Token (`Csrf::field()` / `requireValid()`)
-- **Session** – `Secure`, `HttpOnly`, `SameSite` (via `Config::ASSUME_HTTPS` steuerbar)
-- **CSP** – `Content-Security-Policy-Report-Only` mit `frame-ancestors 'none'`
-- **Kein CDN** – alle Fonts, CSS und JS lokal (keine Google-Anfragen, DSGVO-konform)
-
----
-
-## Tests
-
-```powershell
-php tests\lint.php          # Syntaxprüfung aller PHP-Dateien
-php tests\run_tests.php     # Geschäftslogik-Tests (96/96 bestanden)
-php tests\year_planning_test.php
-```
+1. Repository klonen oder als Zip-Archiv herunterladen.
+2. Eigene `config.local.php` im Projekt-Root anlegen mit individuellem `data_dir` (Pfad außerhalb des Document Roots, z. B. `/var/www/vhosts/<gemeinde>.de/private/psychkg-data`).
+3. `public/install.php` aufrufen (mit `allow_install = true`) → Demo-Benutzer erstellen.
+4. Nach Login: `install.php` löschen, `allow_install` auf `false` setzen.
+5. Über Admin-Tab **Einstellungen** die eigenen Einsatzzeiten konfigurieren:
+   - Bereitschaftswechsels (z. B. Montag 22:00 statt Mittwoch 16:00)
+   - Innendienst (aktiv, Zeiten, Tage – oder deaktiviert → 24/7)
+6. Dienstplan für das gewünschte Halbjahr/Jahr generieren.
+7. Mitarbeiter einladen (Nutzerverwaltung über Dashboard / Admin).
 
 ---
 
 ## Kontakt & Weitergabe
 
-Für Fragen zur Weitergabe der App oder zur Einrichtung für eine neue Einsatzgemeinschaft:
+Für Fragen, Anpassungen oder Unterstützung bei der Einrichtung für eine neue Einsatzgemeinde:
 
 **Dario Jozic**  
 E-Mail: **dario@jozic.de**
 
-Dieses Repository ist als **öffentliche Weitergabe-Version** gedacht. Bei Interesse an einer eigenen Instanz: Clone → `install.php` → eigene `data_dir`-Konfiguration → Einsatzzeiten im Admin-Panel einstellen.
+Dieses Repository ist als **öffentliche Weitergabe-Version** konzipiert – es enthält den kompletten App-Code und Beispiel-Daten ohne sensible Inhalte. Bei Interesse an einer eigenen produktiven Instanz: Clone → Install → Konfiguration → Einsatzzeiten einstellen.
 
 ---
 
-© Dario Jozic / PsychKG Bereitschaftsplaner, 2026  
-Erstellt als Backup- und Weitergabe-Repo für Einsatzgemeinschaften.
+## Rechtliche Hinweise
+
+- Die App dient der **Verwaltung dienstlicher Abläufe** und ersetzt keine Rechtsberatung.
+- **PsychKG NRW** ist ein Schutzgesetz des Landes Nordrhein-Westfalen – die Default-Einstellungen in der App orientieren sich an diesem Gesetzeswerk.
+- **DSGVO-konform**: Alle Daten bleiben lokal auf dem Server des Auftragsinhabers; keine externen CDNs, keine Cloud-Uploads.
+- **Installations-Gate**: `public/install.php` ist standardmäßig deaktiviert und erfordert explizite Freischaltung (`allow_install = true` in `config.local.php`).
+
+---
+
+© **Dario Jozic** / PsychKG Bereitschaftsplaner, 2026  
+Erstellt als öffentliche Weitergabe für Einsatzgemeinschaften und Verwaltungen nach PsychKG NRW.
