@@ -1,0 +1,8 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    bootstrapFiles:
+        - src/bootstrap.php
+    ignoreErrors:
+        - '#Function session_status not found#'

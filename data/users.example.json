@@ -1,0 +1,22 @@
+{
+    "users": [
+        {
+            "id": "usr_admin",
+            "username": "admin",
+            "password": "$2y$12$BEISPIELHASHBITTEINSTALLPHPVERWENDENAAAAAAAAAAAAAAAAAAAAA",
+            "name": "Administrator",
+            "role": "admin",
+            "phone": "",
+            "email": ""
+        },
+        {
+            "id": "usr_beispiel",
+            "username": "m.muster",
+            "password": "$2y$12$BEISPIELHASHBITTEINSTALLPHPVERWENDENBBBBBBBBBBBBBBBBBBBBB",
+            "name": "Max Muster",
+            "role": "mitarbeiter",
+            "phone": "0211 123456",
+            "email": "m.muster@beispiel.de"
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+# Prevent browser caching of admin.php (ensure JS updates are loaded)
+<Files "admin.php">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</Files>
+
+# Prevent browser caching of partials
+<Files "partials/tab-*.php">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</Files>
+
+# Directory listing
+Options -Indexes
+
+# Admin tab partials are include-only (see public/admin.php: PSYCHKG_ADMIN).
+# The rewrite blocks direct web access even on Apache-based setups.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^partials/ - [F,L]
+</IfModule>

@@ -1,0 +1,37 @@
+#!/bin/sh
+# Blockt Echtdaten-Commits (Planungsdaten-Schutz) - zweite Schicht nach .gitignore
+# Erfasst alle data/*.json ausser den *.example.json-Vorlagen.
+STAGED_REAL_DATA=$(git diff --cached --name-only | grep -E '(^|/)data/[^/]+\.json$' | grep -v '\.example\.json$' || true)
+if [ -n "$STAGED_REAL_DATA" ]; then
+  echo 'ABBRUCH: data/*.json (Echtdaten) duerfen nicht committet werden! Bitte: git reset HEAD data/*.json' >&2
+  exit 1
+fi
+
+# HTML-Strukturcheck: div-Balance in geaenderten PHP-Dateien
+# (faengt verschachtelte Tabs/Container wie am 16.09.2026 ab)
+#
+# Nur auf View-Dateien. tests/ und src/ enthalten PHP-Code, in dem
+# '<div ...>' als String vorkommt (gerenderte HTML-Fragmente in Tests,
+# Markup-Fragmente im Tagesdetail-Modal). Der naeherungsweise grep-zaehlt
+# diese mit und meldet faelschlich ein Ungleichgewicht.
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '^public/|^templates/' | grep '\.php$' || true); do
+  [ -f "$f" ] || continue
+  O=$(grep -oE '<div[ >]' "$f" | wc -l)
+  C=$(grep -o '</div>' "$f" | wc -l)
+  if [ "$O" != "$C" ]; then
+    echo "ABBRUCH: div-Ungleichgewicht in $f (open=$O close=$C)" >&2
+    exit 1
+  fi
+done
+
+# Syntaxpruefung aller geaenderten PHP-Dateien (auch in tests/ und src/).
+if command -v php >/dev/null 2>&1; then
+  for f in $(git diff --cached --name-only --diff-filter=ACM | grep '\.php$' || true); do
+    [ -f "$f" ] || continue
+    if ! php -l "$f" >/dev/null 2>&1; then
+      echo "ABBRUCH: Syntaxfehler in $f" >&2
+      php -l "$f" >&2 || true
+      exit 1
+    fi
+  done
+fi

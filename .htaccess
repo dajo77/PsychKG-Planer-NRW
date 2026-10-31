@@ -1,0 +1,11 @@
+# PsychKG Bereitschaftsplaner – lokale Apache-Härtung.
+# Das Document Root ist das Projektverzeichnis (siehe README), daher liegen
+# sensible Bereiche in Unterverzeichnissen, die per Web überhaupt nicht
+# erreichbar sein dürfen.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(src|tests|hooks|vendor|data)/ - [F,L]
+    RewriteRule ^(composer\.(json|lock)|README\.md|config\.local\.php|config\.local\.example\.php)$ - [F,L]
+</IfModule>

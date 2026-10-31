@@ -1,0 +1,26 @@
+# PsychKG – Code vs. Echtdaten
+# Echtdaten nie committen (Namen + Hashes + Pläne)
+data/*.json
+!data/*.example.json
+
+# Server-lokale Konfiguration (enthält Pfade des Servers, nicht in Git)
+config.local.php
+!config.local.example.php
+
+# Lokale Backups / Transfer-Artefakte
+*.tar.gz
+*.bak
+*~
+
+# Laufzeit-Artefakte des Storage-Locks (wird zur Laufzeit erzeugt)
+data/.lock
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Node (Tailwind build)
+/node_modules/

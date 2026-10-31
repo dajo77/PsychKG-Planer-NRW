@@ -1,0 +1,171 @@
+﻿        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+            background: #e8e8e8;
+            padding: 12px;
+            font-size: 9pt;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #999;
+            text-decoration: none;
+            background: #fff;
+            color: #222;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .print-sheet {
+            max-width: 297mm;
+            margin: 0 auto;
+            background: #fff;
+            padding: 10mm 8mm;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: 700;
+            margin-bottom: 8mm;
+            letter-spacing: 0.02em;
+        }
+
+        .calendar-section {
+            margin-bottom: 7mm;
+            page-break-inside: avoid;
+        }
+
+        .calendar-grid {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .calendar-grid th,
+        .calendar-grid td {
+            border: 1px solid #000;
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+            height: 16px;
+            line-height: 16px;
+            font-size: 8pt;
+        }
+
+        .calendar-grid .month-head {
+            font-weight: 700;
+            font-size: 9pt;
+            background: #fff;
+            height: 20px;
+        }
+
+        .calendar-grid .label-head {
+            font-weight: 700;
+            font-size: 8pt;
+            width: 72px;
+            min-width: 72px;
+            text-align: left;
+            padding-left: 4px;
+        }
+
+        .calendar-grid .day-head {
+            font-weight: 400;
+            font-size: 7pt;
+            width: 14px;
+            min-width: 14px;
+        }
+
+        .calendar-grid .employee-name {
+            font-weight: 700;
+            text-align: left;
+            padding-left: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .calendar-grid .mark {
+            font-weight: 700;
+            font-size: 9pt;
+        }
+
+        .day-weekend {
+            background: #d9d9d9;
+        }
+
+        .day-holiday {
+            background: #fcd5b4;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-top: 6mm;
+            font-size: 9pt;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-swatch {
+            width: 18px;
+            height: 14px;
+            border: 1px solid #000;
+            display: inline-block;
+        }
+
+        .legend-swatch.weekend { background: #d9d9d9; }
+        .legend-swatch.holiday { background: #fcd5b4; }
+
+        .meta-line {
+            margin-top: 4mm;
+            font-size: 7pt;
+            color: #444;
+            text-align: right;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .print-sheet {
+                box-shadow: none;
+                padding: 0;
+                max-width: none;
+            }
+
+            .action-bar {
+                display: none !important;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 8mm;
+            }
+        }
