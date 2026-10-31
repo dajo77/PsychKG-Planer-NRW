@@ -7,6 +7,27 @@ function setCredentials(username, password) {
     if (pwEl) { pwEl.value = password; }
 }
 
+// Demo-Zugänge: Daten kommen aus data-Attributen (CSP-konform, kein onclick).
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-demo-username]');
+    if (!btn) { return; }
+    setCredentials(btn.getAttribute('data-demo-username') || '', '');
+    var pw = document.getElementById('password');
+    if (pw) { pw.focus(); }
+});
+
+// Nach dem Logout keine (alten) Cache-Inhalte zurücklassen.
+(function () {
+    if (!('caches' in window)) { return; }
+    if (!/(?:[?&])msg=logged_out(?:&|$)/.test(window.location.search)) { return; }
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHES' });
+    }
+    caches.keys().then(function (keys) {
+        keys.forEach(function (k) { caches.delete(k); });
+    }).catch(function () {});
+})();
+
 (function () {
     // Passwort anzeigen/verstecken
     var pw = document.getElementById('password');

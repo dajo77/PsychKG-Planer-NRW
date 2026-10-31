@@ -241,16 +241,29 @@ class ShiftService
     /**
      * Unix-Timestamp des Bereitschaftswechsels (Bereitschaftsbeginn), der zu
      * einem Zeitpunkt $ts gehoert: die staubeligste Wechsel-Uhrzeit <= $ts.
+     *
+     * Wichtig: am Wechseltag selbst vor der Wechselzeit liegt der Beginn in
+     * der *Vorwoche*. dayTimeToTimestamp() springt immer auf den naechsten
+     * gleichen Wochentag; ein simples "-7 Tage" landete dadurch am Mittwoch
+     * um 10:00 auf demselben Mittwoch 16:00 – also in der Zukunft.
      */
     public static function getDutyStartTimestamp(int $ts): int
     {
         $day = self::getDutyStartDay();
         $time = self::getDutyStartTime();
-        $candidate = self::dayTimeToTimestamp($ts, $day, $time);
-        if ($candidate > $ts) {
-            $candidate = self::shiftDays($candidate, -7);
+        $tz = new \DateTimeZone(Config::getTimezone());
+        $dt = (new \DateTimeImmutable('@' . $ts))->setTimezone($tz);
+
+        // Wochentag der aktuellen Woche (inkl. heute), nicht "next <day>".
+        $delta = ($day - (int) $dt->format('N') + 7) % 7;
+        $candidate = $dt->modify('+' . $delta . ' days')
+            ->setTime((int) substr($time, 0, 2), (int) substr($time, 3, 2), 0);
+
+        if ($candidate->getTimestamp() > $ts) {
+            $candidate = $candidate->modify('-7 days');
         }
-        return $candidate;
+
+        return $candidate->getTimestamp();
     }
 
     /**

@@ -102,7 +102,7 @@ class AbsenceService
 
         // Read-modify-write must be atomic: the read happens inside the same
         // lock as the write, otherwise parallel adds can be lost.
-        $result = JsonStorage::synchronized(function (): ?string {
+        $result = JsonStorage::synchronized(function () use ($userId, $start, $end, $reason): ?string {
             $list = $this->getAll();
             $list[] = [
                 'id' => 'abs_' . bin2hex(random_bytes(16)),
@@ -131,6 +131,29 @@ class AbsenceService
             ));
             if (count($filtered) === count($list)) {
                 return false;
+            }
+            $ok = $this->storage->write(['absences' => $filtered]);
+            $this->cache = null;
+            return $ok;
+        });
+
+        return $result;
+    }
+
+    /**
+     * Removes all absences of a user (called when the account is deleted).
+     * Returns true when nothing was left to remove.
+     */
+    public function removeForUser(string $userId): bool
+    {
+        $result = JsonStorage::synchronized(function () use ($userId): bool {
+            $list = $this->getAll();
+            $filtered = array_values(array_filter(
+                $list,
+                fn (array $a) => ($a['user_id'] ?? '') !== $userId
+            ));
+            if (count($filtered) === count($list)) {
+                return true;
             }
             $ok = $this->storage->write(['absences' => $filtered]);
             $this->cache = null;

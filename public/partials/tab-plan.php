@@ -50,7 +50,7 @@ use Src\Service\ScheduleService;
                             <span class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Halbjahr</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <label class="flex items-center p-3 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 transition-all has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
-                                    <input type="radio" name="period" value="h1" class="sr-only" checked>
+                                    <input type="radio" name="period" value="h1" class="sr-only" <?= $planPeriodSelected === 'h1' ? 'checked' : '' ?>>
                                     <div class="text-center w-full">
                                         <div class="text-sm font-bold text-slate-800">1. Halbjahr</div>
                                         <div class="text-[10px] text-slate-500 mt-0.5">01.01. – 30.06. <span data-plan-year-label><?= $planYearSelected ?></span></div>
@@ -58,7 +58,7 @@ use Src\Service\ScheduleService;
                                     </div>
                                 </label>
                                 <label class="flex items-center p-3 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:border-indigo-300 transition-all has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
-                                    <input type="radio" name="period" value="h2" class="sr-only">
+                                    <input type="radio" name="period" value="h2" class="sr-only" <?= $planPeriodSelected === 'h2' ? 'checked' : '' ?>>
                                     <div class="text-center w-full">
                                         <div class="text-sm font-bold text-slate-800">2. Halbjahr</div>
                                         <div class="text-[10px] text-slate-500 mt-0.5">01.07. – 31.12. <span data-plan-year-label><?= $planYearSelected ?></span></div>

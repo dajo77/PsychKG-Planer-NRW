@@ -146,8 +146,7 @@ class JsonStorage
      * @return T
      */
     public static function synchronized(callable $fn): mixed
-    {
-        $lockPath = \Src\Core\Config::getDataDir() . DIRECTORY_SEPARATOR . '.lock';
+    {        $lockPath = \Src\Core\Config::getDataDir() . DIRECTORY_SEPARATOR . '.lock';
         $dir = dirname($lockPath);
         if (!is_dir($dir)) {
             @mkdir($dir, 0755, true);
@@ -175,5 +174,21 @@ class JsonStorage
                 flock(self::$lockHandle, LOCK_UN);
             }
         }
+    }
+
+    /**
+     * Releases the shared lock handle. Only for process teardown/tests: on
+     * Windows an open handle keeps the `.lock` file (and its directory) alive.
+     */
+    public static function closeLock(): void
+    {
+        if (self::$lockHandle !== null) {
+            if (is_resource(self::$lockHandle)) {
+                flock(self::$lockHandle, LOCK_UN);
+                fclose(self::$lockHandle);
+            }
+            self::$lockHandle = null;
+        }
+        self::$lockDepth = 0;
     }
 }

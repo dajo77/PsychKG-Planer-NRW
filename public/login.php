@@ -24,10 +24,13 @@ Flash::consume($noSuccess, $error, [], [
     'login_invalid' => 'Ungültiger Benutzername oder falsches Passwort.',
 ]);
 
-// Rate limiting
-$rateLimitFile = sys_get_temp_dir() . '/psychkg_login_' . hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+// Rate limiting: per client IP and per username. Behind the Plesk/nginx proxy
+// REMOTE_ADDR is the proxy address, so Config::getClientIp() resolves the
+// forwarded client (X-Forwarded-For is only trusted from a trusted proxy).
+$clientIp = Config::getClientIp();
 $rateLimitMax = 5;
 $rateLimitWindow = 900;
+$rateLimitFile = sys_get_temp_dir() . '/psychkg_login_ip_' . hash('sha256', $clientIp);
 
 if (!function_exists('psychkgLoginThrottle')) {
     function psychkgLoginThrottle(string $file, int $max, int $window, bool $recordFailure = false, bool $reset = false): array {
@@ -71,14 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($username === '' || $password === '') {
             Flash::redirect('login.php', null, 'login_empty');
         } else {
+            $rateLimitUserFile = sys_get_temp_dir() . '/psychkg_login_user_'
+                . hash('sha256', mb_strtolower($username));
+            [, $userRateLimited] = psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow);
+            if ($userRateLimited) {
+                Flash::redirect('login.php', null, 'login_locked');
+            }
+
             if ($auth->login($username, $password)) {
                 psychkgLoginThrottle($rateLimitFile, $rateLimitMax, $rateLimitWindow, false, true);
+                psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow, false, true);
                 $auditService->log(AuditEntry::LOGIN_SUCCESS, 'user', $username);
                 $_SESSION['just_logged_in'] = true;
                 header('Location: dashboard.php');
                 exit;
             }
             psychkgLoginThrottle($rateLimitFile, $rateLimitMax, $rateLimitWindow, true);
+            psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow, true);
             $auditService->log(AuditEntry::LOGIN_FAILED, 'user', $username);
             Flash::redirect('login.php', null, 'login_invalid');
         }
@@ -101,6 +113,7 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
     <link rel="stylesheet" href="assets/fonts.css">
     <meta name="theme-color" content="#312e81">
     <script src="assets/js/dark-mode.js" defer></script>
+    <script src="assets/js/login.js" defer></script>
     <style>
         @keyframes loginIn { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes floatOrb { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(20px, -30px) scale(1.05); } 66% { transform: translate(-15px, 20px) scale(0.95); } }
@@ -232,7 +245,7 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                             <input type="password" name="password" id="password" required autocomplete="current-password"
                                 class="field-pro w-full pl-11 pr-11 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-[0.95rem] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
                                 placeholder="Ihr Kennwort" />
-                            <button type="button" id="pw-toggle" aria-label="Passwort anzeigen" onclick="var p=this.previousElementSibling; var s=p.type==='password'; p.type=s?'text':'password'; this.querySelector('svg').innerHTML=s?'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 4.477 0 8.268 2.943 9.542 7a9.956 9.956 0 01-2.667 3.825m-6.875-3.825a3 3 0 110-6 3 3 0 010 6z\'/>':'<path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M15 12a3 3 0 11-6 0 3 3 0 016 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z\'/>';"
+                            <button type="button" id="pw-toggle" aria-label="Passwort anzeigen"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-500 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>
@@ -248,12 +261,12 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                     <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-700/40">
                         <span class="block text-center text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-400 mb-4">Demo-Zugänge</span>
                         <div class="flex flex-wrap justify-center gap-2.5 text-xs">
-                            <button type="button" onclick="document.getElementById('username').value='admin'; document.getElementById('password').focus();"
+                            <button type="button" data-demo-username="admin"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-indigo-200/60 bg-indigo-50/50 hover:bg-indigo-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
                                 <span class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">A</span>
                                 <span class="font-bold text-indigo-700">Administrator</span>
                             </button>
-                            <button type="button" onclick="document.getElementById('username').value='m.schmidt'; document.getElementById('password').focus();"
+                            <button type="button" data-demo-username="m.schmidt"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200/60 bg-emerald-50/50 hover:bg-emerald-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
                                 <span class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">M</span>
                                 <span class="font-bold text-emerald-700">Mitarbeiter</span>

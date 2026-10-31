@@ -21,12 +21,40 @@ if (PHP_SAPI !== 'cli') {
 
 require_once __DIR__ . '/../src/bootstrap.php';
 
+use Src\Core\Config;
 use Src\Core\Html;
 use Src\Model\ScheduleBlock;
 use Src\Service\AbsenceService;
 use Src\Service\ScheduleService;
 use Src\Service\ShiftService;
 use Src\Service\SnapshotService;
+
+// Test isolation: the suite saves shift settings, so it must never write into
+// the real data directory (data/settings.json or a configured production
+// path). Config::overrideDataDir() takes precedence over config.local.php.
+$testDataDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR
+    . 'psychkg-tests-' . bin2hex(random_bytes(8));
+if (!is_dir($testDataDir) && !mkdir($testDataDir, 0700, true) && !is_dir($testDataDir)) {
+    fwrite(STDERR, "Testdatenverzeichnis konnte nicht angelegt werden: {$testDataDir}\n");
+    exit(1);
+}
+Config::overrideDataDir($testDataDir);
+register_shutdown_function(static function () use ($testDataDir): void {
+    \Src\Storage\JsonStorage::closeLock();
+    if (!is_dir($testDataDir)) {
+        return;
+    }
+    foreach (scandir($testDataDir) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+        $path = $testDataDir . DIRECTORY_SEPARATOR . $entry;
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
+    @rmdir($testDataDir);
+});
 
 $GLOBALS['tests_pass'] = 0;
 $GLOBALS['tests_fail'] = 0;
@@ -202,6 +230,18 @@ t('week', 'Friday maps back to previous Wed 16:00',
 $sun = ScheduleService::getDutyWeekStartForTimestamp(strtotime('2026-03-08 10:00'));
 t('week', 'Sunday maps back to previous Wed 16:00',
     date('Y-m-d H:i', $sun), '2026-03-04 16:00');
+// Regression: on the handover day *before* the handover time, the current duty
+// week started seven days earlier. The old implementation returned the future
+// timestamp of the same day and left the duty week unscheduled.
+$wedMorning = ScheduleService::getDutyWeekStartForTimestamp(strtotime('2026-03-04 10:00'));
+t('week', 'Wednesday morning maps to previous Wed 16:00',
+    date('Y-m-d H:i', $wedMorning), '2026-02-25 16:00');
+$wedExact = ScheduleService::getDutyWeekStartForTimestamp(strtotime('2026-03-04 16:00'));
+t('week', 'Wednesday exactly at handover maps to itself',
+    date('Y-m-d H:i', $wedExact), '2026-03-04 16:00');
+$nextFromMorning = ScheduleService::nextDutyStartAfter(strtotime('2026-03-04 10:00'));
+t('week', 'next handover after Wednesday morning is the same day 16:00',
+    date('Y-m-d H:i', $nextFromMorning), '2026-03-04 16:00');
 
 // ---------------------------------------------------------- Snapshot month
 section('SnapshotService::isValidMonth()');
@@ -304,6 +344,49 @@ t('html', 'pRaw keeps leading/trailing spaces', \Src\Core\Html::pRaw('pw'), ' pa
 t('html', 'pRaw rejects arrays', \Src\Core\Html::pRaw('bad', 'fallback'), 'fallback');
 $_POST = [];
 
+$_GET = ['plan_year' => ['1'], 'plan_period' => ['h1']];
+t('html', 'qi rejects array (no 500)', Html::qi('plan_year', 0, 2000, 2100), 0);
+t('html', 'q rejects array', Html::q('plan_period', 'fallback'), 'fallback');
+$_GET = [];
+
+// ------------------------------------------------------------------- Config
+section('Config — HTTPS-Erkennung / Client-IP hinter Proxy');
+
+$savedServer = $_SERVER;
+unset(
+    $_SERVER['HTTPS'], $_SERVER['HTTP_X_FORWARDED_PROTO'],
+    $_SERVER['HTTP_X_FORWARDED_FOR'], $_SERVER['HTTP_X_REAL_IP']
+);
+$_SERVER['SERVER_PORT'] = 80;
+$_SERVER['REMOTE_ADDR'] = '203.0.113.9';
+
+t('config', 'plain HTTP detected', Config::isHttps(), false);
+t('config', 'direct client is not a trusted proxy', Config::isTrustedProxy(), false);
+t('config', 'direct X-Forwarded-For is ignored',
+    Config::getClientIp(), '203.0.113.9');
+
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+t('config', 'HTTPS via trusted loopback proxy', Config::isHttps(), true);
+
+$_SERVER['HTTP_X_FORWARDED_PROTO'] = 'http';
+t('config', 'HTTP via trusted loopback proxy', Config::isHttps(), false);
+
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.7, 127.0.0.1';
+t('config', 'client IP resolved from forwarded chain',
+    Config::getClientIp(), '198.51.100.7');
+
+// A client-supplied leftmost entry must not win over the address appended by
+// our own proxy (right-to-left walk).
+$_SERVER['HTTP_X_FORWARDED_FOR'] = '1.2.3.4, 198.51.100.7, 127.0.0.1';
+t('config', 'spoofed leftmost forwarded entry is ignored',
+    Config::getClientIp(), '198.51.100.7');
+
+$_SERVER = $savedServer;
+
+t('config', 'tests run against the isolated data directory',
+    Config::getDataDir(), $testDataDir);
+
 // ------------------------------------------------------- Shift settings (Einsatzzeiten)
 section('ShiftService — Einsatzzeiten / Bereitschaftswechsels');
 
@@ -325,6 +408,7 @@ t('shift', 'custom duty start time 22:00', ShiftService::getDutyStartTime(), '22
 t('shift', 'custom innendienst disabled', ShiftService::isInnendienstEnabled(), false);
 t('shift', 'custom bereitschaft end = handover', ShiftService::getBereitschaftEndTime(), '22:00');
 t('shift', 'custom duty week start Monday 22:00', date('Y-m-d H:i', ShiftService::getDutyStartTimestamp(strtotime('2026-03-02 23:00'))), '2026-03-02 22:00');
+t('shift', 'custom duty week start Monday before handover', date('Y-m-d H:i', ShiftService::getDutyStartTimestamp(strtotime('2026-03-02 20:00'))), '2026-02-23 22:00');
 
 ShiftService::clearCache();
 ShiftService::saveShiftSettings([
@@ -369,6 +453,16 @@ ShiftService::saveShiftSettings([
     'innendienst_office_days' => [1, 2, 3, 4, 5],
 ]);
 ShiftService::clearCache();
+
+// ------------------------------------------------------- Absences cleanup
+section('AbsenceService::removeForUser()');
+
+$absenceService = new AbsenceService();
+t('absence', 'add for cleanup', $absenceService->add('usr_cleanup', '2026-05-01', '2026-05-03', 'urlaub'), null);
+t('absence', 'one entry stored', count($absenceService->getForUser('usr_cleanup')), 1);
+t('absence', 'removeForUser ok', $absenceService->removeForUser('usr_cleanup'), true);
+t('absence', 'entries gone', count($absenceService->getForUser('usr_cleanup')), 0);
+t('absence', 'removeForUser is idempotent', $absenceService->removeForUser('usr_cleanup'), true);
 
 // --------------------------------------------------------------- Summary
 $total = $GLOBALS['tests_pass'] + $GLOBALS['tests_fail'];

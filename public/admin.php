@@ -1,11 +1,6 @@
 <?php
 require_once __DIR__ . '/../src/bootstrap.php';
 
-// Session starten, damit $_SESSION verfügbar ist (Bootstrap konfiguriert nur, startet aber nicht)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 use Src\Auth\AuthManager;
 use Src\Core\Config;
 use Src\Core\Csrf;
@@ -115,23 +110,34 @@ Flash::consume($success, $error, $okMessages, $errMessages);
 $planYearMin = (int) date('Y');
 $planYearMax = $planYearMin + 5;
 
-// Jahr-Persistenz: Query-String > Session > aktuelles Jahr
-if (isset($_GET['plan_year']) && ctype_digit($_GET['plan_year'])) {
-    $planYearSelected = (int) $_GET['plan_year'];
-    if ($planYearSelected >= $planYearMin && $planYearSelected <= $planYearMax) {
-        $_SESSION['plan_year'] = $planYearSelected;
-    }
-} elseif (isset($_SESSION['plan_year']) && $_SESSION['plan_year'] >= $planYearMin && $_SESSION['plan_year'] <= $planYearMax) {
+// Jahr-Persistenz: Query-String > Session > aktuelles Jahr.
+// Html::qi() rejects arrays (`?plan_year[]=1`) instead of letting ctype_digit()
+// throw a TypeError and turn the request into a 500.
+$planYearSelected = Html::qi('plan_year', 0, 2000, 2100);
+if ($planYearSelected > 0) {
+    $_SESSION['plan_year'] = $planYearSelected;
+} elseif (isset($_SESSION['plan_year']) && is_int($_SESSION['plan_year'])) {
     $planYearSelected = $_SESSION['plan_year'];
 } else {
     $planYearSelected = (int) date('Y');
-    $_SESSION['plan_year'] = $planYearSelected;
 }
-$planYearMin = (int) date('Y');
-$planYearMax = $planYearMin + 5;
 $planYearSelected = max($planYearMin, min($planYearMax, $planYearSelected));
+$_SESSION['plan_year'] = $planYearSelected;
+
+// Halbjahr-Persistenz: nach einer Generierung steht es im Redirect, sonst gilt
+// das aktuell laufende Kalenderhalbjahr. Der PDF-Export markiert damit das
+// richtige Halbjahr, statt immer "1. HJ" zu aktivieren.
+$currentPeriod = (int) date('n') <= 6 ? 'h1' : 'h2';
+$sessionPeriod = $_SESSION['plan_period'] ?? $currentPeriod;
+$planPeriodSelected = Html::token(
+    Html::q('plan_period', is_string($sessionPeriod) ? $sessionPeriod : $currentPeriod),
+    ['h1', 'h2'],
+    $currentPeriod
+);
+$_SESSION['plan_period'] = $planPeriodSelected;
+
 if ($success !== null && $plannedYear = Html::qi('plan_year', 0, 2000, 2100)) {
-    $plannedPeriod = Html::q('plan_period');
+    $plannedPeriod = Html::token(Html::q('plan_period'), ['h1', 'h2'], '');
     $halfLabel = match ($plannedPeriod) {
         'h1' => '1. Halbjahr',
         'h2' => '2. Halbjahr',
@@ -204,23 +210,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             Flash::redirect($redirect, null, 'schedule_invalid');
         }
 
-        // Pre-check: refuse past periods with a clear message instead of a
-        // generic failure from generateWeeks(). The service layer's own guard
-        // only returns false; we must surface why to the user.
+        // Pre-check: refuse fully past periods with a clear message instead of
+        // a generic failure from generateWeeks(). The *running* half-year is an
+        // exception: planning it in week 3 must start at the current duty week
+        // (the part that is already history cannot be re-planned).
+        $currentPeriod = (int) date('n') <= 6 ? 'h1' : 'h2';
+        $isRunningHalfYear = ((int) $planYear === (int) date('Y')) && $period === $currentPeriod;
+
         $requestedStart = (int) strtotime($startDate);
         $dutyWeekStart = ScheduleService::getDutyWeekStartForTimestamp(time());
         if ($requestedStart < $dutyWeekStart) {
-            Flash::redirect($redirect, null, 'schedule_period_past');
+            if (!$isRunningHalfYear) {
+                Flash::redirect($redirect, null, 'schedule_period_past');
+            }
+            $startDate = date('Y-m-d', $dutyWeekStart);
+            $requestedStart = $dutyWeekStart;
         }
 
+        // Same start as generateWeeks(): a date that already is a Wednesday is
+        // kept there, so 'next Wednesday' would undercount by one.
+        $planStart = ScheduleService::nextDutyStartAfter(
+            (new DateTimeImmutable($startDate, new DateTimeZone(Config::getTimezone())))
+                ->setTime(0, 0, 0)->getTimestamp()
+        );
+
         if ($scheduleService->generateWeeks($startDate, $weeks, $employees, true)) {
-            // Actual number of weeks, for the audit trail. Must use the same
-            // start as generateWeeks(): a date that already is a Wednesday is
-            // kept there, so 'next Wednesday' would undercount by one.
-            $planStart = ScheduleService::nextDutyStartAfter(
-                (new DateTimeImmutable($startDate, new DateTimeZone(Config::getTimezone())))
-                    ->setTime(0, 0, 0)->getTimestamp()
-            );
+            // Actual number of weeks, for the audit trail.
             $weeksPlanned = ScheduleService::weeksToCover(
                 $planStart,
                 $period === 'h1'
@@ -301,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         Flash::redirect($redirect, null, 'reset_failed');
     } elseif ($action === 'add_user') {
         $newUsername = Html::p('new_username');
-        $newPassword = Html::p('new_password');
+        $newPassword = Html::pRaw('new_password');
         $newName = Html::p('new_name');
         $newRole = Html::p('new_role', 'mitarbeiter');
         $newPhone = Html::p('new_phone');
@@ -327,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $editName = Html::p('edit_name');
         $editUsername = Html::p('edit_username');
         $editRole = Html::p('edit_role', 'mitarbeiter');
-        $editPassword = Html::p('edit_password');
+        $editPassword = Html::pRaw('edit_password');
         $editPhone = Html::p('edit_phone');
         $editEmail = Html::p('edit_email');
 
@@ -384,15 +399,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             // Reassign orphaned blocks to eligible employees (no "Unbekannt" blocks).
             $scheduleService->sanitizeIneligibleAssignments();
             $tradeService->removeUserTrades($delUserId);
+            $absenceService->removeForUser($delUserId);
             $auditService->log(AuditEntry::USER_DELETED, 'user', $delUserId);
             Flash::redirect($redirect, 'user_deleted');
         } else {
             Flash::redirect($redirect, null, 'user_delete_failed');
         }
     } elseif ($action === 'change_password') {
-        $currentPw = Html::p('current_password');
-        $newPw = Html::p('new_password');
-        $confirmPw = Html::p('confirm_password');
+        $currentPw = Html::pRaw('current_password');
+        $newPw = Html::pRaw('new_password');
+        $confirmPw = Html::pRaw('confirm_password');
         $redirect = 'admin.php?tab=' . $tab;
 
         if ($newPw !== $confirmPw) {
@@ -557,7 +573,7 @@ $healthChecks[] = [
     'label' => 'Session-Cookie',
     'ok' => (bool)ini_get('session.cookie_httponly'),
     'detail' => 'httponly=' . var_export((bool)ini_get('session.cookie_httponly'), true)
-        . ' secure=' . var_export((bool)ini_get('session.cookie_secure'), true)
+        . ' secure=' . var_export(\Src\Core\Config::isHttps(), true) . ' (HTTPS erkannt)'
         . ' samesite=' . (ini_get('session.cookie_samesite') ?: '–'),
 ];
 $healthChecks[] = [
@@ -698,9 +714,10 @@ $calTabParam = 'plan'; // always plan tab for the calendar
                 <?php
                 // Jahr für PDF-Export: gewählte Planung (falls gesetzt), sonst aktuelles Jahr
                 $pdfYear = $planYearSelected;
-                // Halbjahr stammt aus dem Planungsjahr, nicht aus dem aktuellen Kalenderjahr
-                // (Planung für 2027 muss auch im Jahr 2026 als „1. HJ 2027" exportierbar sein).
-                $pdfIsH1 = ((int)date('n', strtotime($pdfYear . '-01-01'))) <= 6;
+                // Halbjahr stammt aus der tatsächlich gewählten Planungsperiode.
+                // Vorher wurde es aus dem Datum "01.01.<Jahr>" abgeleitet und war
+                // damit immer "1. HJ".
+                $pdfIsH1 = $planPeriodSelected === 'h1';
                 ?>
                 <a href="export_schedule_pdf.php?start=<?= $pdfYear ?>-01-01&end=<?= $pdfYear ?>-06-30"
                    target="_blank"

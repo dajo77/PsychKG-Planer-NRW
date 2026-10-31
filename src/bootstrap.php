@@ -53,21 +53,18 @@ set_exception_handler(static function (\Throwable $e): void {
 });
 
 // Harden the session cookie before any session_start() happens.
-// secure is enabled only on HTTPS so local HTTP development keeps working.
+// Secure is set only when THIS request is actually served over TLS, so plain
+// HTTP deployments behind a non-TLS proxy keep working. Config::isHttps()
+// accepts X-Forwarded-Proto only from a trusted proxy (REMOTE_ADDR).
 // A dedicated session name isolates PsychKG from other apps on the same
 // domain (one-time logout for all users after deploy).
 if (session_status() === PHP_SESSION_NONE) {
-    // Config::ASSUME_HTTPS rather than X-Forwarded-Proto: that header is
-    // client-settable unless the proxy is known to overwrite it. Local HTTP
-    // development keeps working by flipping the constant to false.
-    $isHttps = \Src\Core\Config::ASSUME_HTTPS
-        || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
     session_name('PSYCHKGSESSID');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
         'httponly' => true,
-        'secure' => $isHttps,
+        'secure' => \Src\Core\Config::isHttps(),
         'samesite' => 'Lax',
     ]);
 }
@@ -87,9 +84,12 @@ if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: same-origin');
     header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-    // HSTS: erst nach TLS-Auslieferung erzwingen (max-age 1 Jahr, HSTS preloading
-    // kann nach Prüfung über https://hstspreload.org ergänzt werden).
-    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    // HSTS is only meaningful (and only valid) over an actual TLS connection.
+    // Sending it on plain HTTP is ignored by browsers, but it would also
+    // advertise TLS support this deployment may not have.
+    if (\Src\Core\Config::isHttps()) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
 }
 
 // Content-Security-Policy is ENFORCED (not Report-Only).

@@ -18,8 +18,10 @@ class AuthManager
         $this->storage = new JsonStorage(Config::getUsersFilePath());
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
-            $this->checkSessionExpiry();
         }
+        // Always evaluate the idle timeout, even when the entry point started
+        // the session itself (admin.php did that before).
+        $this->checkSessionExpiry();
         $this->refreshSessionActivity();
     }
 
@@ -29,10 +31,16 @@ class AuthManager
     private function checkSessionExpiry(): void
     {
         $lastActivity = $_SESSION['last_activity'] ?? 0;
-        if ($lastActivity > 0 && (time() - $lastActivity) > self::SESSION_LIFETIME) {
+        if (is_int($lastActivity) && $lastActivity > 0
+            && (time() - $lastActivity) > self::SESSION_LIFETIME
+        ) {
             $_SESSION = [];
-            session_destroy();
-            session_start();
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_destroy();
+                session_start();
+                // New id for the fresh (empty) session: no fixation window.
+                session_regenerate_id(true);
+            }
         }
     }
 
@@ -45,21 +53,23 @@ class AuthManager
     }
 
     /**
-     * Invalidates the current session (wipe data + new session id) so a
-     * password change immediately invalidates the stolen/forged session token
-     * that is holding the old credentials.
+     * Rotates the session id after a credential change.
+     *
+     * The old token must die, but the user should stay logged in: destroying
+     * the whole session made the following redirect land on the login page and
+     * discarded the "Passwort geändert" confirmation. Regenerating the id
+     * invalidates the old token while keeping the authenticated state; the
+     * CSRF token is re-issued because it is bound to the old session.
      */
-    private function invalidateCurrentSession(): void
+    private function rotateSessionAfterCredentialChange(): void
     {
-        $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
         }
+
         session_regenerate_id(true);
+        unset($_SESSION['csrf_token']);
+        $_SESSION['last_activity'] = time();
     }
 
     /**
@@ -390,9 +400,10 @@ class AuthManager
             return false;
         }
 
-        // The old session token is now invalid: wipe + regenerate immediately
-        // after a successful password change so a leaked token dies right away.
-        $this->invalidateCurrentSession();
+        // The old session token must not survive the password change, but the
+        // login itself must (otherwise the success message is lost and the
+        // user is bounced to the login page).
+        $this->rotateSessionAfterCredentialChange();
 
         return true;
         });

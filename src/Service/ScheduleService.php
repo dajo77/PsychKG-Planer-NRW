@@ -1001,7 +1001,11 @@ class ScheduleService
 
         $auth = new AuthManager();
         $eligible = $auth->getDutyEligibleUsers();
-        $replacementId = $eligible[0]->getId() ?? '';
+        // If the deleted user was the last duty-eligible employee, there is no
+        // replacement. Clear the assignment instead of dereferencing [0] (which
+        // was a fatal error) – sanitizeIneligibleAssignments() fills the gap
+        // once a new employee exists.
+        $replacementId = !empty($eligible) ? $eligible[0]->getId() : '';
         $changed = false;
 
         foreach ($blocks as $block) {
