@@ -233,5 +233,21 @@ Monitoring (nur Logging, kein externer Dienst):
 
 - Mehr als `SUSPICIOUS_THRESHOLD` (5) fehlgeschlagene Login-Versuche pro Benutzer/IP in 900 Sekunden erzeugen `Logger::warning('Suspicious login pattern', ...)`.
 
+## Demo-Version
+
+Eine öffentliche Demo-Instanz ist erreichbar unter:
+
+```
+https://www.dario-jozic.de/psychkg-planer-nrw/
+```
+
+**Admin-Zugang für die Demo (zum Testen):**
+- Benutzer: `admin`
+- Passwort: `Administrator26!`
+
+Hinweis: Die Demo nutzt Beispiel-Daten (`users.example.json`, `schedule.example.json`). Für einen produktiven Einsatz muss `public/install.php` ausgeführt und diese Datei danach manuell gelöscht werden. Die Zugangsdaten gelten nur für die Demo und sollten nach dem Testen nicht weiterverwendet werden.
+
+---
+
 © **Dario Jozic** / PsychKG Bereitschaftsplaner, 2026  
 Erstellt als öffentliche Weitergabe für Einsatzgemeinschaften und Verwaltungen nach PsychKG NRW.
