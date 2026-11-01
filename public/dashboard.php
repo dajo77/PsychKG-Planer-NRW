@@ -43,6 +43,7 @@ $errMessages = [
     'pw_mismatch' => Translator::t('dashboard.err.pw_mismatch'),
     'pw_weak' => Translator::t('dashboard.err.pw_weak'),
     'pw_wrong' => Translator::t('dashboard.err.pw_wrong'),
+    'pw_demo_protected' => Translator::t('dashboard.err.pw_demo_protected'),
 ];
 Flash::consume($success, $error, $okMessages, $errMessages);
 
@@ -69,6 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             Flash::redirect('dashboard.php', null, 'trade_failed');
         }
     } elseif ($action === 'change_own_password') {
+        // DEMO-Schutz: Der Admin-Zugang darf in der Demo nicht geändert werden,
+        // sonst stimmen die öffentlichen Zugangsdaten (README) nicht mehr.
+        if ($currentUser->getId() === 'usr_admin') {
+            Flash::redirect('dashboard.php', null, 'pw_demo_protected');
+        }
         $currentPw = Html::pRaw('current_password');
         $newPw = Html::pRaw('new_password');
         $confirmPw = Html::pRaw('confirm_password');
