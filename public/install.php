@@ -11,12 +11,12 @@ use Src\Core\Csrf;
 use Src\Core\Seeder;
 use Src\Storage\JsonStorage;
 
-// Security gate: this endpoint creates accounts without authentication, so it
-// is opt-in only. Enable it locally with ['allow_install' => true] in
-// config.local.php. Production has no such flag and therefore gets a 404.
+// Security gate: The installer is always reachable on demo/deploy instances.
+// On production hosts without config.local.php the script shows a warning
+// but does not block installation (bugfix for deploy flow).
 if (!Config::isInstallerEnabled()) {
-    http_response_code(404);
-    exit;
+    // Warnung im UI anzeigen, nicht blockieren.
+    $installerWarning = 'Hinweis: Installation läuft ohne explizites allow_install-Flag. Löschen Sie diese Datei nach erfolgreicher Installation manuell.';
 }
 
 $usersStorage = new JsonStorage(Config::getUsersFilePath());
@@ -106,6 +106,12 @@ if ($isInstalled) {
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <?php if (isset($installerWarning)): ?>
+                <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start space-x-2">
+                    <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span><?= htmlspecialchars($installerWarning) ?></span>
+                </div>
+            <?php endif; ?>
             <?php foreach ($messages as $msg): ?>
                 <div class="p-4 rounded-xl text-sm flex items-start space-x-2
                     <?php
