@@ -44,8 +44,6 @@ return [
     'dashboard.error.unauthorized' => 'Sie haben keine Berechtigung für diesen Bereich.',
     'dashboard.ok.trade_offered' => 'Der Dienst wurde erfolgreich auf dem Marktplatz zum Tausch angeboten.',
     'dashboard.ok.pw_changed' => 'Passwort erfolgreich geändert.',
-    'dashboard.err.pw_demo_protected' => 'In der Demo-Version kann das Admin-Passwort nicht geändert werden (öffentliche Zugangsdaten).',
-    'dashboard.err.pw_demo_protected' => 'In der Demo-Version kann das Admin-Passwort nicht geändert werden (öffentliche Zugangsdaten).',
     'dashboard.err.trade_failed' => 'Fehler beim Anbieten des Dienstes. Ggf. ist er bereits offen oder nicht Ihnen zugewiesen.',
     'dashboard.err.pw_mismatch' => 'Die neuen Passwörter stimmen nicht überein.',
     'dashboard.err.pw_weak' => 'Passwort entspricht nicht den Anforderungen (min. 12 Zeichen, Großbuchstabe, Ziffer, Sonderzeichen).',
