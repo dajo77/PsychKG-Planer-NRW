@@ -53,6 +53,11 @@ class JsonStorage
         // Apply a shared lock (multiple clients can read simultaneously)
         flock($fp, LOCK_SH);
 
+        // The directory entry may have been swapped by a concurrent write()
+        // (rename). Drop PHP's stat cache for this path so fstat() below sees
+        // the inode the open handle actually points to.
+        clearstatcache(true, $path);
+
         // Size the read from the OPEN HANDLE, not from the path. write() commits
         // via rename(), which swaps the directory entry while our descriptor
         // still refers to the previous inode — filesize($path) would then report
@@ -121,6 +126,10 @@ class JsonStorage
         if (is_file($this->filePath)) {
             @copy($this->filePath, $this->filePath . '.bak');
         }
+
+        // rename() swaps the directory entry; cached stat data for the target
+        // path would otherwise describe the old file for a short moment.
+        clearstatcache(true, $this->filePath);
 
         if (!rename($tmp, $this->filePath)) {
             @unlink($tmp);

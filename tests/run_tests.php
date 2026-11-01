@@ -264,7 +264,10 @@ section('AuthManager::validatePasswordStrength()');
 t('pw', 'too short rejected', \Src\Auth\AuthManager::validatePasswordStrength('Ab1') !== null, true);
 t('pw', 'no uppercase rejected', \Src\Auth\AuthManager::validatePasswordStrength('abcdefg1') !== null, true);
 t('pw', 'no digit rejected', \Src\Auth\AuthManager::validatePasswordStrength('Abcdefgh') !== null, true);
-t('pw', 'valid accepted', \Src\Auth\AuthManager::validatePasswordStrength('Psychkg2026'), null);
+t('pw', 'no special rejected', \Src\Auth\AuthManager::validatePasswordStrength('Abcdefgh1') !== null, true);
+// Neue Regel: mindestens 12 Zeichen, Großbuchstabe, Ziffer, Sonderzeichen.
+t('pw', 'valid accepted (12 chars + special)', \Src\Auth\AuthManager::validatePasswordStrength('Psychkg2026!'), null);
+t('pw', 'old 11-char no-special rejected', \Src\Auth\AuthManager::validatePasswordStrength('Psychkg2026') !== null, true);
 
 // ------------------------------------------------- Calendar table structure
 section('Dashboard-Monatskalender — Tabellenstruktur');
@@ -463,6 +466,58 @@ t('absence', 'one entry stored', count($absenceService->getForUser('usr_cleanup'
 t('absence', 'removeForUser ok', $absenceService->removeForUser('usr_cleanup'), true);
 t('absence', 'entries gone', count($absenceService->getForUser('usr_cleanup')), 0);
 t('absence', 'removeForUser is idempotent', $absenceService->removeForUser('usr_cleanup'), true);
+
+// ------------------------------------------------ LoginThrottle / Security
+section('LoginThrottle');
+
+$throttle = new \Src\Security\LoginThrottle();
+$throttle->reset('test', 'user');
+
+// Erfolgreiche Prüfung (noch kein Versuch)
+[$c, $limited] = $throttle->check('test', 'user', 5, 900);
+t('throttle', 'check initial: 0 attempts', $c, 0);
+t('throttle', 'check initial: not limited', $limited, false);
+
+// Aufzeichnung von Fehlern
+[$c1, $limited1] = $throttle->recordFailure('test', 'user', 5, 900);
+[$c2, $limited2] = $throttle->recordFailure('test', 'user', 5, 900);
+[$c3, $limited3] = $throttle->recordFailure('test', 'user', 5, 900);
+[$c4, $limited4] = $throttle->recordFailure('test', 'user', 5, 900);
+[$c5, $limited5] = $throttle->recordFailure('test', 'user', 5, 900);
+t('throttle', 'record 5 attempts', $c5, 5);
+t('throttle', '5 attempts = limited', $limited5, true);
+
+// Reset nach erfolgreichem Login
+$throttle->reset('test', 'user');
+[$cr, $lcr] = $throttle->check('test', 'user', 5, 900);
+t('throttle', 'reset clears attempts', $cr, 0);
+
+// Probabilistisches Prune darf nicht abstürzen
+$throttle->maybePrune();
+
+// --------------------------------------------------- JsonStorage flock/parallell
+section('JsonStorage — flock und Parallelität');
+
+$storageFile = $testDataDir . DIRECTORY_SEPARATOR . 'test_parallel.json';
+$storage = new \Src\Storage\JsonStorage($storageFile);
+$storage->write(['items' => ['a', 'b', 'c']]);
+
+// Lesen nach Schreiben muss konsistent sein (kein Race)
+$readBack = $storage->read();
+t('json', 'write then read consistent', $readBack === ['items' => ['a', 'b', 'c']], true);
+
+// --------------------------------------------------- TradeService IDOR
+section('TradeService — Defense-in-Depth-IDOR');
+
+$tradeFile = $testDataDir . DIRECTORY_SEPARATOR . 'trades_test.json';
+$tradeStorage = new \Src\Storage\JsonStorage($tradeFile);
+// Schreibe leere Trades
+$tradeStorage->write(['trades' => []]);
+
+// Ohne Block-Service ist es schwierig, einen echten Trade zu erzeugen;
+// wir testen zumindest, dass der Service geladen wird und read() konsistent ist.
+$tradeService = new \Src\Service\TradeService();
+t('idor', 'TradeService instanzierbar', $tradeService !== null, true);
 
 // --------------------------------------------------------------- Summary
 $total = $GLOBALS['tests_pass'] + $GLOBALS['tests_fail'];

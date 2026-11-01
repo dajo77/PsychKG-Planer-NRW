@@ -58,6 +58,9 @@ class TradeService
         }
 
         $block = $this->scheduleService->getBlockById($blockId);
+        // Defense in depth: dashboard.php already rejects foreign block ids
+        // with 403, but the service enforces ownership itself so a future
+        // controller cannot bypass the authorization by calling it directly.
         if (!$block || $block->getAssignedUserId() !== $userId || $block->getStatus() !== 'assigned') {
             return false;
         }

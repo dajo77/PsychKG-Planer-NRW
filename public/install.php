@@ -49,15 +49,33 @@ if ($isInstalled) {
         $isInstalled = true;
 
         // Self-destruct only after a verified successful write: this file must
-        // never survive the installation.
-        @unlink(__FILE__);
+        // never survive the installation. If unlink() fails (read-only file,
+        // Windows lock, restrictive permissions), rename it to *.disabled:
+        // PHP only executes *.php, so the dangerous endpoint is gone either way.
+        $deleted = @unlink(__FILE__);
+        $renamed = false;
+        if (!$deleted) {
+            $renamed = @rename(__FILE__, __FILE__ . '.disabled');
+        }
 
-        $messages[] = [
-            'type' => 'warning',
-            'text' => @is_file(__FILE__)
-                ? 'WARNUNG: Diese Datei konnte nicht automatisch gelöscht werden — bitte jetzt manuell entfernen!'
-                : 'Dieses Script hat sich selbst entfernt. Bitte prüfen, dass install.php wirklich nicht mehr erreichbar ist.'
-        ];
+        if ($deleted) {
+            $messages[] = [
+                'type' => 'warning',
+                'text' => 'Dieses Script hat sich selbst entfernt. Bitte prüfen, dass install.php wirklich nicht mehr erreichbar ist.',
+            ];
+        } elseif ($renamed) {
+            $messages[] = [
+                'type' => 'warning',
+                'text' => 'WARNUNG: install.php konnte nicht gelöscht werden und wurde in install.php.disabled umbenannt. '
+                    . 'Bitte löschen Sie die Datei public/install.php.disabled jetzt manuell vom Server.',
+            ];
+        } else {
+            $messages[] = [
+                'type' => 'error',
+                'text' => 'WARNUNG: install.php konnte NICHT automatisch entfernt werden. '
+                    . 'Löschen Sie die Datei public/install.php sofort manuell vom Server und prüfen Sie, dass sie nicht mehr erreichbar ist.',
+            ];
+        }
     }
 }
 ?>
@@ -73,7 +91,7 @@ if ($isInstalled) {
     <!-- Lokale Webfonts (kein CDN, keine IP-Uebermittlung an Dritte) -->
     <link rel="stylesheet" href="assets/fonts.css">
     <meta name="theme-color" content="#4f46e5">
-    <script src="assets/js/dark-mode.js"></script>
+    <script src="assets/js/dark-mode.js" nonce="<?= CSP_NONCE ?>"></script>
 </head>
 <body class="min-h-full flex items-center justify-center px-4">
     <div class="w-full max-w-md">

@@ -79,6 +79,30 @@ class AuthManager
     private const DUMMY_HASH = '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
     /**
+     * Regenerates the session id without assuming the session is still active.
+     *
+     * Race condition: another request of the same browser may already have
+     * called session_write_close() (or the session may never have been started
+     * in a CLI/test context). session_regenerate_id() then fails with a warning
+     * and the old id survives. Close the session first, reopen it, and rotate
+     * only when the session is actually active.
+     */
+    private function regenerateSessionId(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        if (session_status() !== PHP_SESSION_ACTIVE && !headers_sent()) {
+            session_start();
+        }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+    }
+
+    /**
      * Attempts to log in a user with username and password.
      */
     public function login(string $username, string $password): bool
@@ -89,7 +113,7 @@ class AuthManager
         foreach ($usersData as $userArr) {
             if (strcasecmp($userArr['username'], $username) === 0) {
                 if (password_verify($password, $userArr['password'])) {
-                    session_regenerate_id(true);
+                    $this->regenerateSessionId();
                     $_SESSION['user_id'] = $userArr['id'];
                     $_SESSION['user_name'] = $userArr['name'];
                     $_SESSION['user_role'] = User::normalizeRole($userArr['role'] ?? 'mitarbeiter');
@@ -348,19 +372,23 @@ class AuthManager
     }
 
     /**
-     * Validates password strength: min 8 chars, 1 uppercase, 1 digit.
+     * Validates password strength: min 12 chars, 1 uppercase, 1 digit and
+     * 1 special character (anything that is neither letter, digit nor space).
      * @return string|null Error message or null if valid.
      */
     public static function validatePasswordStrength(string $password): ?string
     {
-        if (strlen($password) < 8) {
-            return 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+        if (mb_strlen($password, 'UTF-8') < 12) {
+            return 'Das Passwort muss mindestens 12 Zeichen lang sein.';
         }
-        if (!preg_match('/[A-ZÄÖÜ]/', $password)) {
+        if (!preg_match('/[A-ZÄÖÜ]/u', $password)) {
             return 'Das Passwort muss mindestens einen Großbuchstaben enthalten.';
         }
         if (!preg_match('/[0-9]/', $password)) {
             return 'Das Passwort muss mindestens eine Ziffer enthalten.';
+        }
+        if (!preg_match('/[^\p{L}\p{N}\s]/u', $password)) {
+            return 'Das Passwort muss mindestens ein Sonderzeichen enthalten.';
         }
         return null;
     }

@@ -203,6 +203,6 @@ $periodLabel = date('d.m.Y', $billingStartTs) . ' – ' . date('d.m.Y', $billing
 
     </div>
 
-    <script src="assets/js/print.js"></script>
+    <script src="assets/js/print.js" nonce="<?= CSP_NONCE ?>"></script>
 </body>
 </html>

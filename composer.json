@@ -15,10 +15,7 @@
     "autoload": {
         "psr-4": {
             "Src\\": "src/"
-        },
-        "files": [
-            "src/bootstrap.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

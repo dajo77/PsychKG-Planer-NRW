@@ -22,20 +22,20 @@ use Src\Core\Csrf;
                     <input type="hidden" name="action" value="change_password">
 
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Aktuelles Passwort</label>
-                        <input type="password" name="current_password" required
+                        <label for="profile-current-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Aktuelles Passwort</label>
+                        <input type="password" id="profile-current-password" name="current_password" required
                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all shadow-sm" />
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Neues Passwort</label>
-                        <input type="password" name="new_password" required minlength="8" placeholder="Mind. 8 Zeichen"
+                        <label for="profile-new-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Neues Passwort</label>
+                        <input type="password" id="profile-new-password" name="new_password" required minlength="12" placeholder="Mind. 12 Zeichen, inkl. Sonderzeichen"
                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all shadow-sm" />
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Neues Passwort bestätigen</label>
-                        <input type="password" name="confirm_password" required minlength="8"
+                        <label for="profile-confirm-password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Neues Passwort bestätigen</label>
+                        <input type="password" id="profile-confirm-password" name="confirm_password" required minlength="12"
                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-sm focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all shadow-sm" />
                     </div>
 

@@ -169,5 +169,69 @@ Die Software wird unter **proprietärer Lizenz** vertrieben (siehe `composer.jso
 
 ---
 
+---
+
+## Setup / Installation
+
+1. PHP 8.1+ mit `ext-calendar`, `ext-json`, `ext-mbstring`.
+2. `composer.json` liegt bei; wenn Composer verfügbar ist:
+   ```bash
+   composer dump-autoload
+   ```
+   Auf Hosts ohne Composer arbeitet der manuelle PSR-4-Fallback (`src/bootstrap.php`).
+3. `public/install.php` einmalig aufrufen (nur wenn `config.local.php` `allow_install` aktiviert) und danach sofort löschen oder prüfen, dass die Datei nicht mehr erreichbar ist.
+4. Datenverzeichnis (`data/`) und `storage/logs/` müssen für den Webserver-Prozess schreibbar sein; `.htaccess` und `index.php` schützen das Log-Verzeichnis.
+
+## Tests
+
+```bash
+php tests/run_tests.php
+```
+
+Der Runner ist dependency-frei und läuft auf jedem Host (auch ohne Composer). Für Syntax-Prüfung:
+
+```bash
+php -l src/Auth/AuthManager.php
+php -l src/Logging/Logger.php
+php -l src/Security/LoginThrottle.php
+```
+
+Wenn Composer lokal verfügbar ist: `composer test` und `composer lint`.
+
+## Sicherheit
+
+- **Passwortregeln**: mindestens 12 Zeichen, mindestens ein Großbuchstabe, eine Ziffer und ein Sonderzeichen (`[^\p{L}\p{N}\s]`).
+- **Session-Härtung**: `session.use_strict_mode=1`, `cookie_httponly=1`, `cookie_samesite=Lax`, `session_regenerate_id(true)` nach Login.
+- **CSP**: `script-src 'self' 'nonce-...'`; alle `<script>`-Tags tragen den per-Response-Nonce (`CSP_NONCE`).
+- **Login-Throttling**: dateibasiert (`sys_get_temp_dir()`), `flock()`, probabilistisches `prune()` (1 %), Monitoring (`Logger::warning` bei ≥ 5 Fehlversuchen).
+- **IDOR-Schutz**: `dashboard.php` prüft `assignedUserId` gegen angemeldeten Benutzer; `TradeService::requestTrade()` enthält Defense-in-Depth-Check; unbekannte/fremde Block-IDs führen zu HTTP 403.
+- **Exception-Handler**: ersetzt `error_log()` durch `Logger::error()`; `display_errors=0`.
+- **Log-Schutz**: `storage/logs/.htaccess` (Deny) und `index.php`-Stub verhindern HTTP-Zugang zu Logs.
+
+Siehe `SECURITY.md` für Meldeweg und Gültigkeits-Scope.
+
+## Passwortregeln
+
+Ab Version 1.0.0 (nach Hardening-Paket):
+
+- Mindestlänge: **12 Zeichen**
+- Mindestens ein **Großbuchstabe** (`A–Z`, `ÄÖÜ`)
+- Mindestens eine **Ziffer** (`0–9`)
+- Mindestens ein **Sonderzeichen** (`[^\p{L}\p{N}\s]`)
+
+Fehlermeldungen in `dashboard.php`, `admin.php`, `tab-profile.php` und `tab-users.php` wurden entsprechend angepasst (`minlength="12"`, Label-Texte aktualisiert).
+
+## Logging und Monitoring
+
+Der Logger (`src/Logging/Logger.php`) schreibt nach `storage/logs/app-YYYY-MM-DD.log` (Tagesrotation, `.htaccess`-Schutz). Level-Steuerung:
+
+- `APP_ENV=dev` (oder `development`/`local`) → `debug` (alles ab debug)
+- Sonst (`prod`) → `warning` (nur warning und höher)
+- Optional überschreibbar über `APP_LOG_LEVEL`
+
+Monitoring (nur Logging, kein externer Dienst):
+
+- Mehr als `SUSPICIOUS_THRESHOLD` (5) fehlgeschlagene Login-Versuche pro Benutzer/IP in 900 Sekunden erzeugen `Logger::warning('Suspicious login pattern', ...)`.
+
 © **Dario Jozic** / PsychKG Bereitschaftsplaner, 2026  
 Erstellt als öffentliche Weitergabe für Einsatzgemeinschaften und Verwaltungen nach PsychKG NRW.

@@ -250,6 +250,6 @@ for ($i = 0; $i < count($months); $i += 2) {
         </div>
     </div>
 
-    <script src="assets/js/print.js"></script>
+    <script src="assets/js/print.js" nonce="<?= CSP_NONCE ?>"></script>
 </body>
 </html>

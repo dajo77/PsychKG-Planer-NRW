@@ -1,23 +1,37 @@
 <?php
 declare(strict_types=1);
-// PSR-4 Autoloader for Src namespace
-spl_autoload_register(function ($class) {
-    $prefix = 'Src\\';
-    $baseDir = __DIR__ . DIRECTORY_SEPARATOR;
+// PSR-4 autoloading: Composer is preferred (vendor/autoload.php). The project
+// must still run on hosts without Composer, so the manual PSR-4 fallback stays
+// for Src\. Never require both: Composer's autoloader already covers Src\.
+$composerAutoload = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+if (is_file($composerAutoload)) {
+    require_once $composerAutoload;
+} else {
+    spl_autoload_register(function ($class) {
+        $prefix = 'Src\\';
+        $baseDir = __DIR__ . DIRECTORY_SEPARATOR;
 
-    // Check if the class uses the namespace prefix
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
+        // Check if the class uses the namespace prefix
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) !== 0) {
+            return;
+        }
 
-    $relativeClass = substr($class, $len);
-    $file = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
+        $relativeClass = substr($class, $len);
+        $file = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
 
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
+        if (file_exists($file)) {
+            require_once $file;
+        }
+    });
+}
+
+// Per-response CSP nonce. It is intentionally NOT stored in the session:
+// a session-wide nonce would be valid across responses and defeat the
+// purpose. Templates emit it via CSP_NONCE on every <script> tag.
+if (!defined('CSP_NONCE')) {
+    define('CSP_NONCE', bin2hex(random_bytes(16)));
+}
 
 date_default_timezone_set(\Src\Core\Config::getTimezone());
 
@@ -34,10 +48,12 @@ set_error_handler(static function (int $severity, string $message, string $file,
 });
 
 set_exception_handler(static function (\Throwable $e): void {
-    error_log(
-        'PsychKG EXCEPTION [' . date('c') . '] ' . get_class($e) . ': ' . $e->getMessage()
-        . ' in ' . $e->getFile() . ':' . $e->getLine()
-    );
+    \Src\Logging\Logger::error('Unhandled exception', [
+        'type' => get_class($e),
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+    ]);
     if (PHP_SAPI === 'cli') {
         // Im CLI (Tests/Smoke-Checks) nicht in eine HTML-Seite pressen.
         exit(1);
@@ -59,6 +75,12 @@ set_exception_handler(static function (\Throwable $e): void {
 // A dedicated session name isolates PsychKG from other apps on the same
 // domain (one-time logout for all users after deploy).
 if (session_status() === PHP_SESSION_NONE) {
+    // Reject attacker-supplied session ids (session fixation) and keep the
+    // session id out of URLs. These settings must be in place before start.
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_samesite', 'Lax');
     session_name('PSYCHKGSESSID');
     session_set_cookie_params([
         'lifetime' => 0,
@@ -95,15 +117,16 @@ if (!headers_sent()) {
 // Content-Security-Policy is ENFORCED (not Report-Only).
 // Inline <script> blocks were moved to external files so 'unsafe-inline' is
 // no longer needed for scripts; inline event handlers (onclick="switchTab(...)")
-// are attached via addEventListener in the external JS files, so the policy is
-// fully strict for scripts. Inline style="" attributes are still present, so
-// style-src keeps 'unsafe-inline' for now (low risk: styles cannot execute JS).
-// Webfonts are self-hosted (assets/fonts.css), so no third-party origin is
-// allowed at all.
+// are attached via addEventListener in the external JS files. Every <script>
+// tag additionally carries the per-response CSP_NONCE, so a future inline
+// block would need the nonce too. Inline style="" attributes are still
+// present, so style-src keeps 'unsafe-inline' for now (low risk: styles cannot
+// execute JS). Webfonts are self-hosted (assets/fonts.css), so no third-party
+// origin is allowed at all.
 if (!headers_sent()) {
     header(
         "Content-Security-Policy: default-src 'self'; "
-        . "script-src 'self'; "
+        . "script-src 'self' 'nonce-" . CSP_NONCE . "'; "
         . "style-src 'self' 'unsafe-inline'; "
         . "font-src 'self'; "
         . "img-src 'self' data:; "

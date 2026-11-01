@@ -6,6 +6,8 @@ use Src\Core\Config;
 use Src\Core\Csrf;
 use Src\Core\Flash;
 use Src\Core\Html;
+use Src\I18n\Translator;
+use Src\Security\LoginThrottle;
 use Src\Service\AuditService;
 use Src\Model\AuditEntry;
 
@@ -19,49 +21,22 @@ if ($auth->isLoggedIn()) {
 $error = null;
 $noSuccess = null;
 Flash::consume($noSuccess, $error, [], [
-    'login_empty' => 'Bitte füllen Sie alle Felder aus.',
-    'login_locked' => 'Zu viele Login-Versuche. Bitte warten Sie einige Minuten.',
-    'login_invalid' => 'Ungültiger Benutzername oder falsches Passwort.',
+    'login_empty' => Translator::t('login.error.empty'),
+    'login_locked' => Translator::t('login.error.locked'),
+    'login_invalid' => Translator::t('login.error.invalid'),
 ]);
 
 // Rate limiting: per client IP and per username. Behind the Plesk/nginx proxy
 // REMOTE_ADDR is the proxy address, so Config::getClientIp() resolves the
 // forwarded client (X-Forwarded-For is only trusted from a trusted proxy).
+// LoginThrottle kapselt die dateibasierte Zählung (flock, prune, Monitoring).
 $clientIp = Config::getClientIp();
 $rateLimitMax = 5;
 $rateLimitWindow = 900;
-$rateLimitFile = sys_get_temp_dir() . '/psychkg_login_ip_' . hash('sha256', $clientIp);
+$throttle = new LoginThrottle();
+$throttle->maybePrune();
 
-if (!function_exists('psychkgLoginThrottle')) {
-    function psychkgLoginThrottle(string $file, int $max, int $window, bool $recordFailure = false, bool $reset = false): array {
-        $handle = @fopen($file, 'c+');
-        if ($handle === false) return [0, false];
-        flock($handle, LOCK_EX);
-        $raw = stream_get_contents($handle);
-        $list = json_decode($raw === false || $raw === '' ? '[]' : $raw, true);
-        if (!is_array($list)) $list = [];
-        $now = time();
-        $attempts = [];
-        foreach ($list as $ts) {
-            if (is_int($ts) && $ts > $now - $window) $attempts[] = $ts;
-        }
-        if ($reset) $attempts = [];
-        if ($recordFailure) $attempts[] = $now;
-        ftruncate($handle, 0); rewind($handle);
-        fwrite($handle, json_encode($attempts));
-        fflush($handle);
-        flock($handle, LOCK_UN); fclose($handle);
-        return [count($attempts), count($attempts) >= $max];
-    }
-}
-
-[$attemptCount, $rateLimited] = psychkgLoginThrottle($rateLimitFile, $rateLimitMax, $rateLimitWindow);
-
-if (random_int(1, 100) === 1) {
-    foreach (glob(sys_get_temp_dir() . '/psychkg_login_*') ?: [] as $stale) {
-        if (is_file($stale) && filemtime($stale) < time() - 86400) @unlink($stale);
-    }
-}
+[$attemptCount, $rateLimited] = $throttle->check('ip', $clientIp, $rateLimitMax, $rateLimitWindow);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($rateLimited) {
@@ -74,23 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($username === '' || $password === '') {
             Flash::redirect('login.php', null, 'login_empty');
         } else {
-            $rateLimitUserFile = sys_get_temp_dir() . '/psychkg_login_user_'
-                . hash('sha256', mb_strtolower($username));
-            [, $userRateLimited] = psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow);
+            $userKey = mb_strtolower($username);
+            [, $userRateLimited] = $throttle->check('user', $userKey, $rateLimitMax, $rateLimitWindow);
             if ($userRateLimited) {
                 Flash::redirect('login.php', null, 'login_locked');
             }
 
             if ($auth->login($username, $password)) {
-                psychkgLoginThrottle($rateLimitFile, $rateLimitMax, $rateLimitWindow, false, true);
-                psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow, false, true);
+                $throttle->reset('ip', $clientIp);
+                $throttle->reset('user', $userKey);
                 $auditService->log(AuditEntry::LOGIN_SUCCESS, 'user', $username);
                 $_SESSION['just_logged_in'] = true;
                 header('Location: dashboard.php');
                 exit;
             }
-            psychkgLoginThrottle($rateLimitFile, $rateLimitMax, $rateLimitWindow, true);
-            psychkgLoginThrottle($rateLimitUserFile, $rateLimitMax, $rateLimitWindow, true);
+            $throttle->recordFailure('ip', $clientIp, $rateLimitMax, $rateLimitWindow);
+            $throttle->recordFailure('user', $userKey, $rateLimitMax, $rateLimitWindow);
             $auditService->log(AuditEntry::LOGIN_FAILED, 'user', $username);
             Flash::redirect('login.php', null, 'login_invalid');
         }
@@ -99,21 +73,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $msg = $_GET['msg'] ?? '';
 $infoMessage = null;
-if ($msg === 'logged_out') $infoMessage = 'Sie wurden erfolgreich abgemeldet.';
-elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.';
+if ($msg === 'logged_out') $infoMessage = Translator::t('login.info.logged_out');
+elseif ($msg === 'session_invalid') $infoMessage = Translator::t('login.info.session_invalid');
 ?>
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>PsychKG Bereitschaftsplaner — Anmelden</title>
+    <title><?= htmlspecialchars(Translator::t('login.title')) ?></title>
     <link rel="stylesheet" href="assets/app.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%234f46e5'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'>P</text></svg>">
     <link rel="stylesheet" href="assets/fonts.css">
     <meta name="theme-color" content="#312e81">
-    <script src="assets/js/dark-mode.js" defer></script>
-    <script src="assets/js/login.js" defer></script>
+    <script src="assets/js/dark-mode.js" nonce="<?= CSP_NONCE ?>" defer></script>
+    <script src="assets/js/login.js" nonce="<?= CSP_NONCE ?>" defer></script>
     <style>
         @keyframes loginIn { from { opacity: 0; transform: translateY(16px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes floatOrb { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(20px, -30px) scale(1.05); } 66% { transform: translate(-15px, 20px) scale(0.95); } }
@@ -194,17 +168,17 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                     </span>
                 </a>
                 <h1 class="text-3xl font-extrabold text-white mt-5 tracking-tight leading-[1.15]">
-                    Bereitschaftsdienst
-                    <span class="block text-indigo-200/90 text-[0.95em] font-bold">für Ordnungsbehörden NRW</span>
+                    <?= htmlspecialchars(Translator::t('login.heading')) ?>
+                    <span class="block text-indigo-200/90 text-[0.95em] font-bold"><?= htmlspecialchars(Translator::t('login.subheading')) ?></span>
                 </h1>
-                <p class="text-slate-400 text-[0.9rem] mt-3 max-w-xs mx-auto">Professionelles Dienstplanungs- und Dokumentationssystem.</p>
+                <p class="text-slate-400 text-[0.9rem] mt-3 max-w-xs mx-auto"><?= htmlspecialchars(Translator::t('login.subtitle')) ?></p>
             </div>
 
             <!-- Login Card -->
             <article class="glass-pro rounded-[28px] p-7 sm:p-9 anim-delay-2">
                 <header class="mb-6">
-                    <h2 class="text-center text-lg font-extrabold text-slate-900 tracking-tight">Anmelden</h2>
-                    <p class="text-center text-xs text-slate-400 mt-1">Mit Ihrem Dienstkonto</p>
+                    <h2 class="text-center text-lg font-extrabold text-slate-900 tracking-tight"><?= htmlspecialchars(Translator::t('login.card_title')) ?></h2>
+                    <p class="text-center text-xs text-slate-400 mt-1"><?= htmlspecialchars(Translator::t('login.card_subtitle')) ?></p>
                 </header>
 
                 <?php if ($error): ?>
@@ -225,27 +199,27 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                     <?= Csrf::field() ?>
 
                     <div>
-                        <label for="username" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2">Benutzername</label>
+                        <label for="username" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.username')) ?></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none" aria-hidden="true">
                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             </span>
                             <input type="text" name="username" id="username" required autofocus autocomplete="username"
                                 class="field-pro w-full pl-11 pr-4 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-[0.95rem] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
-                                placeholder="z. B. m.schmidt" />
+                                placeholder="<?= htmlspecialchars(Translator::t('login.username_placeholder')) ?>" />
                         </div>
                     </div>
 
                     <div>
-                        <label for="password" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2">Kennwort</label>
+                        <label for="password" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.password')) ?></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none" aria-hidden="true">
                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </span>
                             <input type="password" name="password" id="password" required autocomplete="current-password"
                                 class="field-pro w-full pl-11 pr-11 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-[0.95rem] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
-                                placeholder="Ihr Kennwort" />
-                            <button type="button" id="pw-toggle" aria-label="Passwort anzeigen"
+                                placeholder="<?= htmlspecialchars(Translator::t('login.password_placeholder')) ?>" />
+                            <button type="button" id="pw-toggle" aria-label="<?= htmlspecialchars(Translator::t('login.show_password')) ?>"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-500 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>
@@ -253,26 +227,26 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                     </div>
 
                     <button type="submit" class="btn-pro w-full py-3.5 rounded-2xl text-white font-extrabold text-[0.95rem] tracking-tight shadow-lg transition-all duration-200 active:scale-[0.99] mt-2">
-                        Anmelden
+                        <?= htmlspecialchars(Translator::t('login.submit')) ?>
                     </button>
                 </form>
 
                 <?php if (Config::SHOW_DEMO_CREDENTIALS): ?>
                     <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-700/40">
-                        <span class="block text-center text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-400 mb-4">Demo-Zugänge</span>
+                        <span class="block text-center text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-400 mb-4"><?= htmlspecialchars(Translator::t('login.demo_heading')) ?></span>
                         <div class="flex flex-wrap justify-center gap-2.5 text-xs">
                             <button type="button" data-demo-username="admin"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-indigo-200/60 bg-indigo-50/50 hover:bg-indigo-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
                                 <span class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">A</span>
-                                <span class="font-bold text-indigo-700">Administrator</span>
+                                <span class="font-bold text-indigo-700"><?= htmlspecialchars(Translator::t('login.demo_admin')) ?></span>
                             </button>
                             <button type="button" data-demo-username="m.schmidt"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200/60 bg-emerald-50/50 hover:bg-emerald-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
                                 <span class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">M</span>
-                                <span class="font-bold text-emerald-700">Mitarbeiter</span>
+                                <span class="font-bold text-emerald-700"><?= htmlspecialchars(Translator::t('login.demo_employee')) ?></span>
                             </button>
                         </div>
-                        <p class="text-[10px] text-slate-400 text-center mt-3">Passwörter wurden bei der Installation zufällig generiert.</p>
+                        <p class="text-[10px] text-slate-400 text-center mt-3"><?= htmlspecialchars(Translator::t('login.demo_note')) ?></p>
                     </div>
                 <?php endif; ?>
             </article>
@@ -284,7 +258,7 @@ elseif ($msg === 'session_invalid') $infoMessage = 'Ihre Sitzung ist abgelaufen.
                 <span class="inline-flex items-center gap-1.5"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Daten in Deutschland</span>
             </div>
 
-            <p class="text-center text-[10px] text-slate-500/60 mt-5 font-medium anim-delay-3">Dienstplanungssoftware PsychKG NRW · Version 1.0.0</p>
+            <p class="text-center text-[10px] text-slate-500/60 mt-5 font-medium anim-delay-3"><?= htmlspecialchars(Translator::t('login.version')) ?></p>
         </div>
     </main>
 </body>

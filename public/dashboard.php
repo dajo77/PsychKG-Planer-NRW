@@ -6,6 +6,7 @@ use Src\Core\Config;
 use Src\Core\Csrf;
 use Src\Core\Flash;
 use Src\Core\Html;
+use Src\I18n\Translator;
 use Src\Model\ScheduleBlock;
 use Src\Service\ScheduleService;
 use Src\Service\TradeService;
@@ -29,19 +30,19 @@ $auditService = new AuditService();
 // whitelist instead, matching the pattern Flash::consume() already uses.
 $error = null;
 if (Html::q('error') === 'unauthorized') {
-    $error = 'Sie haben keine Berechtigung für diesen Bereich.';
+    $error = Translator::t('dashboard.error.unauthorized');
 }
 $success = null;
 
 $okMessages = [
-    'trade_offered' => 'Der Dienst wurde erfolgreich auf dem Marktplatz zum Tausch angeboten.',
-    'pw_changed' => 'Passwort erfolgreich geändert.',
+    'trade_offered' => Translator::t('dashboard.ok.trade_offered'),
+    'pw_changed' => Translator::t('dashboard.ok.pw_changed'),
 ];
 $errMessages = [
-    'trade_failed' => 'Fehler beim Anbieten des Dienstes. Ggf. ist er bereits offen oder nicht Ihnen zugewiesen.',
-    'pw_mismatch' => 'Die neuen Passwörter stimmen nicht überein.',
-    'pw_weak' => 'Passwort entspricht nicht den Anforderungen (min. 8 Zeichen, Großbuchstabe, Ziffer).',
-    'pw_wrong' => 'Das aktuelle Passwort ist falsch.',
+    'trade_failed' => Translator::t('dashboard.err.trade_failed'),
+    'pw_mismatch' => Translator::t('dashboard.err.pw_mismatch'),
+    'pw_weak' => Translator::t('dashboard.err.pw_weak'),
+    'pw_wrong' => Translator::t('dashboard.err.pw_wrong'),
 ];
 Flash::consume($success, $error, $okMessages, $errMessages);
 
@@ -51,6 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = Html::p('action');
     if ($action === 'offer_trade') {
         $blockId = Html::p('block_id');
+
+        // IDOR guard: the posted block id is attacker-controlled. Only the
+        // employee currently assigned to the block may offer it. Unknown ids
+        // get the same 403 as foreign ids, so this is not an existence oracle.
+        $block = $scheduleService->getBlockById($blockId);
+        if ($block === null || $block->getAssignedUserId() !== $currentUser->getId()) {
+            http_response_code(403);
+            exit(Translator::t('dashboard.access_denied'));
+        }
+
         if ($tradeService->requestTrade($blockId, $currentUser->getId())) {
             $auditService->log(AuditEntry::TRADE_OFFERED, 'trade', $blockId);
             Flash::redirect('dashboard.php', 'trade_offered');
@@ -277,7 +288,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
 ?>
 <!DOCTYPE html>
 <html lang="de" class="h-full bg-slate-50 text-slate-800">
-<?php $pageTitle = 'PsychKG Bereitschaftsplaner - Dashboard'; require __DIR__ . '/../templates/head.php'; ?>
+<?php $pageTitle = Translator::t('dashboard.title'); require __DIR__ . '/../templates/head.php'; ?>
 <body class="min-h-full flex flex-col bg-slate-50 text-slate-800">
 
     <?php $activePage = 'dashboard'; require __DIR__ . '/../templates/nav.php'; ?>
@@ -794,26 +805,27 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
 
                 <!-- Mein Konto: eigenes Passwort ändern -->
                 <div class="glass-card rounded-3xl p-5">
-                    <h2 class="text-xs font-bold text-slate-800 mb-3 font-display">Mein Konto</h2>
+                    <h2 class="text-xs font-bold text-slate-800 mb-3 font-display"><?= htmlspecialchars(Translator::t('dashboard.password.heading')) ?></h2>
                     <form action="dashboard.php" method="POST" class="space-y-3">
                         <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="change_own_password">
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Aktuelles Passwort</label>
-                            <input type="password" name="current_password" required autocomplete="current-password"
+                            <label for="current_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.current')) ?></label>
+                            <input type="password" name="current_password" id="current_password" required autocomplete="current-password"
                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Neues Passwort (min. 8 Zeichen)</label>
-                            <input type="password" name="new_password" required minlength="8" autocomplete="new-password"
-                                   class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
+                            <label for="new_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.new')) ?></label>
+                            <input type="password" name="new_password" id="new_password" required minlength="12" autocomplete="new-password"
+                                   aria-describedby="pw-policy" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
+                            <p id="pw-policy" class="text-[10px] text-slate-400 mt-1"><?= htmlspecialchars(Translator::t('dashboard.password.policy')) ?></p>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Neues Passwort bestätigen</label>
-                            <input type="password" name="confirm_password" required minlength="8" autocomplete="new-password"
+                            <label for="confirm_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.confirm')) ?></label>
+                            <input type="password" name="confirm_password" id="confirm_password" required minlength="12" autocomplete="new-password"
                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
-                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase rounded-xl transition-all shadow-md">Passwort ändern</button>
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase rounded-xl transition-all shadow-md"><?= htmlspecialchars(Translator::t('dashboard.password.submit')) ?></button>
                     </form>
                 </div>
 

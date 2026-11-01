@@ -45,36 +45,36 @@ use Src\Core\Csrf;
                                                 <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">Mitarbeiter bearbeiten</div>
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Vollständiger Name</label>
-                                                        <input type="text" name="edit_name" value="<?= htmlspecialchars($user->getName()) ?>" required
+                                                        <label for="edit-name" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Vollständiger Name</label>
+                                                        <input type="text" id="edit-name" name="edit_name" value="<?= htmlspecialchars($user->getName()) ?>" required
                                                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                                                     </div>
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Benutzername</label>
-                                                        <input type="text" name="edit_username" value="<?= htmlspecialchars($user->getUsername()) ?>" required
+                                                        <label for="edit-username" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Benutzername</label>
+                                                        <input type="text" id="edit-username" name="edit_username" value="<?= htmlspecialchars($user->getUsername()) ?>" required
                                                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                                                     </div>
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Neues Passwort <span class="text-slate-400">(leer = unverändert)</span></label>
-                                                        <input type="password" name="edit_password" placeholder="Unverändert lassen…"
+                                                        <label for="edit-password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Neues Passwort <span class="text-slate-400">(leer = unverändert)</span></label>
+                                                        <input type="password" id="edit-password" name="edit_password" placeholder="Unverändert lassen…"
                                                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                                                     </div>
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Rolle</label>
-                                                        <select name="edit_role"
+                                                        <label for="edit-role" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Rolle</label>
+                                                        <select id="edit-role" name="edit_role"
                                                                 class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
                                                             <option value="mitarbeiter" <?= $user->getRole() === 'mitarbeiter' ? 'selected' : '' ?>>Mitarbeiter</option>
                                                             <option value="admin" <?= $user->getRole() === 'admin' ? 'selected' : '' ?>>Administrator</option>
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Telefon (dienstlich)</label>
-                                                        <input type="tel" name="edit_phone" value="<?= htmlspecialchars($user->getPhone()) ?>"
+                                                        <label for="edit-phone" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Telefon (dienstlich)</label>
+                                                        <input type="tel" id="edit-phone" name="edit_phone" value="<?= htmlspecialchars($user->getPhone()) ?>"
                                                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                                                     </div>
                                                     <div>
-                                                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">E-Mail</label>
-                                                        <input type="email" name="edit_email" value="<?= htmlspecialchars($user->getEmail()) ?>"
+                                                        <label for="edit-email" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">E-Mail</label>
+                                                        <input type="email" id="edit-email" name="edit_email" value="<?= htmlspecialchars($user->getEmail()) ?>"
                                                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                                                     </div>
                                                 </div>
@@ -138,23 +138,23 @@ use Src\Core\Csrf;
                         <input type="hidden" name="action" value="add_user">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Vollständiger Name *</label>
-                                <input type="text" name="new_name" required placeholder="z.B. Maria Beispiel"
+                                <label for="new-name" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Vollständiger Name *</label>
+                                <input type="text" id="new-name" name="new_name" required placeholder="z.B. Maria Beispiel"
                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Benutzername *</label>
-                                <input type="text" name="new_username" required placeholder="z.B. m.beispiel"
+                                <label for="new-username" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Benutzername *</label>
+                                <input type="text" id="new-username" name="new_username" required placeholder="z.B. m.beispiel"
                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Passwort *</label>
-                                <input type="password" name="new_password" required placeholder="Mind. 8 Zeichen" minlength="8"
+                                <label for="new-password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Passwort *</label>
+                                <input type="password" id="new-password" name="new_password" required placeholder="Mind. 12 Zeichen, inkl. Sonderzeichen" minlength="12"
                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Rolle</label>
-                                <select name="new_role"
+                                <label for="new-role" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Rolle</label>
+                                <select id="new-role" name="new_role"
                                         class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
                                     <option value="mitarbeiter" selected>Mitarbeiter</option>
                                     <option value="admin">Administrator</option>
@@ -162,13 +162,13 @@ use Src\Core\Csrf;
                                 <p class="text-[10px] text-slate-400 mt-1">Hinweis: Es ist genau ein Administrator vorgesehen.</p>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Telefon (dienstlich)</label>
-                                <input type="tel" name="new_phone" placeholder="z.B. 0211 123456"
+                                <label for="new-phone" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Telefon (dienstlich)</label>
+                                <input type="tel" id="new-phone" name="new_phone" placeholder="z.B. 0211 123456"
                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                             </div>
                             <div>
-                                <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">E-Mail</label>
-                                <input type="email" name="new_email" placeholder="optional"
+                                <label for="new-email" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">E-Mail</label>
+                                <input type="email" id="new-email" name="new_email" placeholder="optional"
                                        class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                             </div>
                             <div class="flex items-end sm:col-span-2">
@@ -188,24 +188,24 @@ use Src\Core\Csrf;
                         <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="absence_add">
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Mitarbeiter</label>
-                            <select name="absence_user_id" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
+                            <label for="absence-user" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Mitarbeiter</label>
+                            <select id="absence-user" name="absence_user_id" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
                                 <?php foreach ($employees as $emp): ?>
                                     <option value="<?= $emp->getId() ?>"><?= htmlspecialchars($emp->getName()) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Von</label>
-                            <input type="date" name="absence_start" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
+                            <label for="absence-start" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Von</label>
+                            <input type="date" id="absence-start" name="absence_start" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Bis</label>
-                            <input type="date" name="absence_end" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
+                            <label for="absence-end" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Bis</label>
+                            <input type="date" id="absence-end" name="absence_end" required class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
                         <div>
-                            <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Grund</label>
-                            <select name="absence_reason" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
+                            <label for="absence-reason" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Grund</label>
+                            <select id="absence-reason" name="absence_reason" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm">
                                 <?php foreach (\Src\Service\AbsenceService::REASONS as $key => $label): ?>
                                     <option value="<?= $key ?>"><?= htmlspecialchars($label) ?></option>
                                 <?php endforeach; ?>

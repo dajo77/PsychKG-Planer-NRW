@@ -88,5 +88,5 @@ $mobileInactiveClass = 'block px-3 py-2 rounded-lg text-sm text-slate-600 hover:
 
 <div class="toast-container" id="toast-container"></div>
 
-<script src="assets/js/nav.js"></script>
-<script src="assets/js/pwa.js"></script>
+<script src="assets/js/nav.js" nonce="<?= CSP_NONCE ?>"></script>
+<script src="assets/js/pwa.js" nonce="<?= CSP_NONCE ?>"></script>

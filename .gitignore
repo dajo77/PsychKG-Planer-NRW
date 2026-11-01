@@ -22,5 +22,10 @@ Thumbs.db
 .idea/
 *.log
 
+# Log-Dateien (nie committen, enthalten Betriebsdaten)
+/storage/logs/
+!storage/logs/.htaccess
+!storage/logs/index.php
+
 # Node (Tailwind build)
 /node_modules/

@@ -79,7 +79,7 @@ $errMessages = [
     'trade_reject_failed' => 'Fehler beim Ablehnen des Tausches.',
     'reset_failed' => 'Fehler beim Zurücksetzen des Dienstplans.',
     'user_fields' => 'Bitte füllen Sie alle Pflichtfelder aus (Name, Benutzername, Passwort).',
-    'pw_weak' => 'Passwort entspricht nicht den Anforderungen (min. 8 Zeichen, Großbuchstabe, Ziffer).',
+    'pw_weak' => 'Passwort entspricht nicht den Anforderungen (min. 12 Zeichen, Großbuchstabe, Ziffer, Sonderzeichen).',
     'user_email' => 'Bitte eine gültige E-Mail-Adresse eingeben (oder leer lassen).',
     'user_admin_exists' => 'Es existiert bereits ein Administrator – es ist genau ein Administrator vorgesehen.',
     'user_add_failed' => 'Fehler beim Anlegen. Möglicherweise existiert der Benutzername bereits.',
@@ -846,9 +846,9 @@ define('PSYCHKG_ADMIN', true);
         </div>
     </div>
 
-<script src="assets/js/admin.js"></script>
+<script src="assets/js/admin.js" nonce="<?= CSP_NONCE ?>"></script>
 
 <div id="day-modal-data" hidden><?= json_encode($dayBlocksMap, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP) ?></div>
-<script src="assets/js/admin-daymodal.js"></script>
+<script src="assets/js/admin-daymodal.js" nonce="<?= CSP_NONCE ?>"></script>
 </body>
 </html>

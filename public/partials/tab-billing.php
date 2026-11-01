@@ -34,13 +34,13 @@ if (!defined('PSYCHKG_ADMIN')) {
                 <form action="admin.php" method="GET" class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                     <input type="hidden" name="tab" value="billing">
                     <div>
-                        <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Von Datum</label>
-                        <input type="date" name="start" value="<?= htmlspecialchars($billingStartInput) ?>"
+                        <label for="billing-start" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Von Datum</label>
+                        <input type="date" id="billing-start" name="start" value="<?= htmlspecialchars($billingStartInput) ?>"
                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                     </div>
                     <div>
-                        <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Bis Datum</label>
-                        <input type="date" name="end" value="<?= htmlspecialchars($billingEndInput) ?>"
+                        <label for="billing-end" class="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Bis Datum</label>
+                        <input type="date" id="billing-end" name="end" value="<?= htmlspecialchars($billingEndInput) ?>"
                                class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                     </div>
                     <div class="flex items-end">

@@ -22,8 +22,8 @@ use Src\Core\Csrf;
                     <?= Csrf::field() ?>
                     <input type="hidden" name="action" value="snapshot_create">
                     <div>
-                        <label class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Monat versiegeln</label>
-                        <input type="month" name="snapshot_month" value="<?= date('Y-m') ?>" required
+                        <label for="snapshot-month" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1">Monat versiegeln</label>
+                        <input type="month" id="snapshot-month" name="snapshot_month" value="<?= date('Y-m') ?>" required
                                class="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                     </div>
                     <button type="submit"
