@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         // des Jahres fairst verlaengern. Zustaendigkeiten der bestehenden
         // Bloecke werden nicht angefasst, nur die Blockgrenzen ruecken nach.
         $redirect = 'admin.php?tab=' . $tab;
-        $employees = $auth->getDutyEligibleUsers();
+        $employeeIds = array_map(fn ($u) => $u->getId(), $auth->getDutyEligibleUsers());
         $allBlocks = $scheduleService->getAllBlocks();
         $last = !empty($allBlocks) ? $allBlocks[count($allBlocks) - 1] : null;
         $targetEnd = 0;
@@ -271,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 (int) strtotime(($targetYear + 1) . '-01-01 00:00:00')
             );
         }
-        $result = $scheduleService->repairCoverageAndExtend($employees, $targetEnd);
+        $result = $scheduleService->repairCoverageAndExtend($employeeIds, $targetEnd);
         if (!empty($result['written'])) {
             $auditService->log(AuditEntry::SCHEDULE_REPAIRED, 'schedule', 'coverage', [
                 'blocks' => $result['checked'],
