@@ -188,7 +188,7 @@ $myTradeHistory = array_slice($myTradeHistory, 0, 20);
                                 <div class="p-5 rounded-2xl bg-white border-2 border-amber-200 flex flex-col justify-between hover:border-amber-300 hover:shadow-md transition-all group shadow-sm lift">
                                     <div class="space-y-4">
                                         <div class="flex justify-between items-start">
-                                            <span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 font-bold uppercase border border-amber-200/50">
+                                            <span class="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700 font-bold uppercase border border-amber-200/50">
                                                 Tausch angeboten
                                             </span>
                                             <span class="text-xs font-semibold text-slate-500">
@@ -250,7 +250,7 @@ $myTradeHistory = array_slice($myTradeHistory, 0, 20);
                                         </div>
                                     </div>
                                     <div class="flex-shrink-0">
-                                        <span class="inline-flex items-center px-2 py-1 rounded bg-violet-50 border border-violet-200 text-violet-700 font-bold uppercase text-[10px]">
+                                        <span class="inline-flex items-center px-2 py-1 rounded bg-violet-50 border border-violet-200 text-violet-700 font-bold uppercase text-xs">
                                             Wartet auf Freigabe
                                         </span>
                                     </div>
@@ -330,11 +330,11 @@ $myTradeHistory = array_slice($myTradeHistory, 0, 20);
                                 <div class="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="text-xs font-bold text-slate-900"><?= $block->getFormattedStart() ?> – <?= $block->getFormattedEnd() ?></div>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase flex-shrink-0 <?= $approved ? 'bg-emerald-100 text-emerald-700' : ($cancelled ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500') ?>">
+                                        <span class="px-2 py-0.5 rounded text-xs font-bold uppercase flex-shrink-0 <?= $approved ? 'bg-emerald-100 text-emerald-700' : ($cancelled ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500') ?>">
                                             <?= $approved ? 'Genehmigt' : ($cancelled ? 'Storniert' : 'Abgelehnt') ?>
                                         </span>
                                     </div>
-                                    <div class="text-[11px] text-slate-500 mt-1">
+                                    <div class="text-xs text-slate-500 mt-1">
                                         <?= $trade->getRequesterId() === $currentUser->getId() ? 'Abgegeben an' : 'Übernommen von' ?>:
                                         <strong><?= htmlspecialchars($userMap[$otherId] ?? 'Mitarbeiter') ?></strong>
                                     </div>

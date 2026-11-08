@@ -415,7 +415,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                                             </div>
                                             <div class="text-2xl font-bold text-slate-900"><?= htmlspecialchars($activeUserName ?? 'Nicht zugeordnet') ?></div>
                                             <?php if ($activeBlock->getAssignedUserId() === $currentUser->getId()): ?>
-                                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10px] font-bold uppercase whitespace-nowrap">Das ist Ihr Dienst!</span>
+                                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold uppercase whitespace-nowrap">Das ist Ihr Dienst!</span>
                                             <?php endif; ?>
                                         </div>
                                     <?php else: ?>
@@ -424,7 +424,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                                             </div>
                                             <div class="text-2xl font-bold text-slate-900">Innendienst</div>
-                                            <span class="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold uppercase whitespace-nowrap">Kein Bereitschaftsdienst</span>
+                                            <span class="px-2.5 py-1 rounded-full bg-amber-100 border border-amber-300 text-amber-800 text-xs font-bold uppercase whitespace-nowrap">Kein Bereitschaftsdienst</span>
                                         </div>
                                     <?php endif; ?>
                                     <div class="text-xs font-semibold text-slate-700 mt-1">
@@ -475,7 +475,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
 
                             <?php if ($isOnCall): ?>
                                 <div class="flex flex-col gap-1 mt-3">
-                                    <div class="text-[10px] uppercase tracking-wider font-semibold text-slate-400">Rufnummer der Rufbereitschaft</div>
+                                    <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Rufnummer der Rufbereitschaft</div>
                                     <a href="tel:<?= htmlspecialchars(preg_replace('/[^+\d]/', '', Config::DUTY_HOTLINE)) ?>" class="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-700 hover:text-indigo-900 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 001.07.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
                                         <?= htmlspecialchars(Config::DUTY_HOTLINE) ?>
@@ -514,7 +514,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                         <h2 class="text-lg font-semibold text-slate-900">Dienstplanübersicht</h2>
                         <span class="text-xs text-slate-400"><?= count($filteredBlocks) ?> von <?= count($allBlocks) ?> Blöcken</span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-[11px] text-slate-500">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 text-xs text-slate-500">
                         <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span> Mein Dienst</span>
                         <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span> Tausch offen</span>
                         <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-violet-400"></span> Wartet auf Freigabe</span>
@@ -647,7 +647,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                                                 </div>
                                             </div>
                                         </div>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border <?= $badgeClass ?> flex-shrink-0 self-start sm:self-center"><?= $badgeText ?></span>
+                                        <span class="px-2 py-0.5 rounded text-xs font-bold uppercase border <?= $badgeClass ?> flex-shrink-0 self-start sm:self-center"><?= $badgeText ?></span>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -693,11 +693,11 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
                                 <div class="text-lg font-bold text-slate-900" data-countup="<?= count($myBlocks) ?>" data-decimals="0"><?= count($myBlocks) ?></div>
-                                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Blöcke</div>
+                                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Blöcke</div>
                             </div>
                             <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
                                 <div class="text-lg font-bold text-slate-900" data-countup="<?= $totalMyNetHours ?>" data-decimals="1"><?= number_format($totalMyNetHours, 1, ',', '') ?></div>
-                                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Netto-Std.</div>
+                                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Netto-Std.</div>
                             </div>
                         </div>
 
@@ -710,13 +710,13 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                             $daysUntil = max(0, ceil(($nextMyBlock->getStartTimestamp() - $now) / 86400));
                         ?>
                             <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 mb-3">
-                                <div class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Nächster Dienst</div>
+                                <div class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Nächster Dienst</div>
                                 <div class="text-sm font-bold text-slate-900 mt-1"><?= $nextMyBlock->getFormattedStart() ?></div>
                                 <div class="text-xs text-slate-600">in <?= $daysUntil ?> Tagen · <?= number_format($nbHours, 1, ',', '') ?>h</div>
                                 <!-- Progress bar -->
                                 <?php if ($activeProgressPct !== null): ?>
                                     <div class="mt-2">
-                                        <div class="flex justify-between text-[10px] text-slate-500 mb-0.5">
+                                        <div class="flex justify-between text-xs text-slate-500 mb-0.5">
                                             <span><?= $activeProgressLabel ?></span>
                                             <span><?= $activeProgressPct ?>%</span>
                                         </div>
@@ -739,22 +739,22 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                                 <div class="flex items-center gap-2 p-2 rounded-xl <?= $isActive ? 'bg-indigo-50 border border-indigo-200' : 'bg-white border border-slate-200' ?>">
                                     <span class="h-2 w-2 rounded-full <?= $colorDot ?> flex-shrink-0"></span>
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[11px] font-semibold text-slate-800 truncate"><?= $block->getFormattedStart() ?> – <?= $block->getFormattedEnd() ?></div>
-                                        <div class="text-[10px] text-slate-500"><?= number_format($netHours, 1, ',', '') ?>h</div>
+                                        <div class="text-xs font-semibold text-slate-800 truncate"><?= $block->getFormattedStart() ?> – <?= $block->getFormattedEnd() ?></div>
+                                        <div class="text-xs text-slate-500"><?= number_format($netHours, 1, ',', '') ?>h</div>
                                     </div>
                                     <?php if ($status === 'assigned' && !$currentUser->isAdmin() && $block->getEndTimestamp() > $now): ?>
                                         <form action="dashboard.php" method="POST" class="flex-shrink-0">
                                             <?= Csrf::field() ?>
                                             <input type="hidden" name="action" value="offer_trade">
                                             <input type="hidden" name="block_id" value="<?= htmlspecialchars($block->getId()) ?>">
-                                            <button type="submit" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase transition-all">
+                                            <button type="submit" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold uppercase transition-all">
                                                 Tauschen
                                             </button>
                                         </form>
                                     <?php elseif ($status === 'trade_open'): ?>
-                                        <span class="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-bold flex-shrink-0">Offen</span>
+                                        <span class="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 text-xs font-bold flex-shrink-0">Offen</span>
                                     <?php elseif ($status === 'trade_pending'): ?>
-                                        <span class="px-2 py-1 rounded-lg bg-violet-50 text-violet-700 text-[10px] font-bold flex-shrink-0">Wartet</span>
+                                        <span class="px-2 py-1 rounded-lg bg-violet-50 text-violet-700 text-xs font-bold flex-shrink-0">Wartet</span>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
@@ -765,7 +765,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                 <!-- Dienstauskunft: who was/is on duty? -->
                 <div class="glass-card rounded-3xl p-5">
                     <h2 class="text-xs font-bold text-slate-800 mb-3 font-display">Dienstauskunft</h2>
-                    <p class="text-[11px] text-slate-500 mb-3">Wer hatte zu einem Zeitpunkt Dienst?</p>
+                    <p class="text-xs text-slate-500 mb-3">Wer hatte zu einem Zeitpunkt Dienst?</p>
                     <form action="dashboard.php" method="GET" class="space-y-2">
                         <div class="grid grid-cols-2 gap-2">
                             <input type="date" name="aq_date" aria-label="Datum für die Dienstauskunft" value="<?= htmlspecialchars($aqDateInput !== '' ? $aqDateInput : $todayYmd) ?>"
@@ -810,18 +810,18 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                         <?= Csrf::field() ?>
                         <input type="hidden" name="action" value="change_own_password">
                         <div>
-                            <label for="current_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.current')) ?></label>
+                            <label for="current_password" class="block text-xs font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.current')) ?></label>
                             <input type="password" name="current_password" id="current_password" required autocomplete="current-password"
                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
                         <div>
-                            <label for="new_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.new')) ?></label>
+                            <label for="new_password" class="block text-xs font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.new')) ?></label>
                             <input type="password" name="new_password" id="new_password" required minlength="12" autocomplete="new-password"
                                    aria-describedby="pw-policy" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
-                            <p id="pw-policy" class="text-[10px] text-slate-400 mt-1"><?= htmlspecialchars(Translator::t('dashboard.password.policy')) ?></p>
+                            <p id="pw-policy" class="text-xs text-slate-400 mt-1"><?= htmlspecialchars(Translator::t('dashboard.password.policy')) ?></p>
                         </div>
                         <div>
-                            <label for="confirm_password" class="block text-[10px] font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.confirm')) ?></label>
+                            <label for="confirm_password" class="block text-xs font-semibold uppercase text-slate-500 mb-1"><?= htmlspecialchars(Translator::t('dashboard.password.confirm')) ?></label>
                             <input type="password" name="confirm_password" id="confirm_password" required minlength="12" autocomplete="new-password"
                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none shadow-sm" />
                         </div>
@@ -848,7 +848,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                             <tr>
                                 <?php $wdays = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag']; ?>
                                 <?php foreach ($wdays as $wd): ?>
-                                    <th scope="col" class="text-[10px] text-slate-400 font-semibold py-1"><span aria-hidden="true"><?= substr($wd, 0, 2) ?></span><span class="sr-only"><?= $wd ?></span></th>
+                                    <th scope="col" class="text-xs text-slate-400 font-semibold py-1"><span aria-hidden="true"><?= substr($wd, 0, 2) ?></span><span class="sr-only"><?= $wd ?></span></th>
                                 <?php endforeach; ?>
                             </tr>
                         </thead>
@@ -910,7 +910,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                                             <?= $dDate->format('d.m.') ?>
                                             <?= ['Mo','Di','Mi','Do','Fr','Sa','So'][(int)$dDate->format('N') - 1] ?>
                                         </span>
-                                        <span class="text-[10px] <?= $isTodayMobile ? 'text-indigo-600' : 'text-emerald-600' ?>">
+                                        <span class="text-xs <?= $isTodayMobile ? 'text-indigo-600' : 'text-emerald-600' ?>">
                                             <?= $isTodayMobile ? 'Heute – Ihr Dienst' : 'Ihr Dienst' ?>
                                         </span>
                                     </div>
@@ -918,7 +918,7 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                             </div>
                         <?php endif; ?>
                     </div>
-                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-4 text-[10px] text-slate-500">
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex items-center gap-4 text-xs text-slate-500">
                         <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-indigo-600"></span> Heute</span>
                         <span class="flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-emerald-300"></span> Ihr Dienst</span>
                     </div>
@@ -964,8 +964,8 @@ $filteredBlocks = array_values(array_filter($allBlocks, function ($b) use ($filt
                         ?>
                             <div>
                                 <div class="flex justify-between items-center mb-0.5">
-                                    <span class="text-[11px] font-semibold <?= $isOwnWeek ? 'text-indigo-700' : 'text-slate-700' ?>"><?= htmlspecialchars($name) ?></span>
-                                    <span class="text-[10px] font-bold text-slate-500"><?= number_format($hours, 1, ',', '') ?>h</span>
+                                    <span class="text-xs font-semibold <?= $isOwnWeek ? 'text-indigo-700' : 'text-slate-700' ?>"><?= htmlspecialchars($name) ?></span>
+                                    <span class="text-xs font-bold text-slate-500"><?= number_format($hours, 1, ',', '') ?>h</span>
                                 </div>
                                 <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                                     <div class="h-full rounded-full transition-all duration-500 <?= $isOwnWeek ? 'bg-indigo-500' : 'bg-slate-300' ?>" style="width: <?= $pct ?>%"></div>

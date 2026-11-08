@@ -80,7 +80,7 @@ elseif ($msg === 'session_invalid') $infoMessage = Translator::t('login.info.ses
 <html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars(Translator::t('login.title')) ?></title>
     <link rel="stylesheet" href="assets/app.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%234f46e5'/><text x='96' y='130' font-size='120' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'>P</text></svg>">
@@ -171,7 +171,7 @@ elseif ($msg === 'session_invalid') $infoMessage = Translator::t('login.info.ses
                     <?= htmlspecialchars(Translator::t('login.heading')) ?>
                     <span class="block text-indigo-200/90 text-[0.95em] font-bold"><?= htmlspecialchars(Translator::t('login.subheading')) ?></span>
                 </h1>
-                <p class="text-slate-400 text-[0.9rem] mt-3 max-w-xs mx-auto"><?= htmlspecialchars(Translator::t('login.subtitle')) ?></p>
+                <p class="text-slate-400 text-sm mt-3 max-w-xs mx-auto"><?= htmlspecialchars(Translator::t('login.subtitle')) ?></p>
             </div>
 
             <!-- Login Card -->
@@ -199,25 +199,25 @@ elseif ($msg === 'session_invalid') $infoMessage = Translator::t('login.info.ses
                     <?= Csrf::field() ?>
 
                     <div>
-                        <label for="username" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.username')) ?></label>
+                        <label for="username" class="block text-xs font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.username')) ?></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none" aria-hidden="true">
                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             </span>
                             <input type="text" name="username" id="username" required autofocus autocomplete="username"
-                                class="field-pro w-full pl-11 pr-4 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-[0.95rem] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
+                                class="field-pro w-full pl-11 pr-4 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
                                 placeholder="<?= htmlspecialchars(Translator::t('login.username_placeholder')) ?>" />
                         </div>
                     </div>
 
                     <div>
-                        <label for="password" class="block text-[11px] font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.password')) ?></label>
+                        <label for="password" class="block text-xs font-extrabold uppercase tracking-[0.08em] text-slate-500 mb-2"><?= htmlspecialchars(Translator::t('login.password')) ?></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 pointer-events-none" aria-hidden="true">
                                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </span>
                             <input type="password" name="password" id="password" required autocomplete="current-password"
-                                class="field-pro w-full pl-11 pr-11 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-[0.95rem] text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-400 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
+                                class="field-pro w-full pl-11 pr-11 py-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-all shadow-[inset_0_1px_3px_rgba(15,23,42,0.03)]"
                                 placeholder="<?= htmlspecialchars(Translator::t('login.password_placeholder')) ?>" />
                             <button type="button" id="pw-toggle" aria-label="<?= htmlspecialchars(Translator::t('login.show_password')) ?>"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-indigo-500 transition-colors">
@@ -226,39 +226,39 @@ elseif ($msg === 'session_invalid') $infoMessage = Translator::t('login.info.ses
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-pro w-full py-3.5 rounded-2xl text-white font-extrabold text-[0.95rem] tracking-tight shadow-lg transition-all duration-200 active:scale-[0.99] mt-2">
+                    <button type="submit" class="btn-pro w-full py-3.5 rounded-2xl text-white font-extrabold text-base tracking-tight shadow-lg transition-all duration-200 active:scale-[0.99] mt-2">
                         <?= htmlspecialchars(Translator::t('login.submit')) ?>
                     </button>
                 </form>
 
                 <?php if (Config::SHOW_DEMO_CREDENTIALS): ?>
                     <div class="mt-8 pt-6 border-t border-slate-200/60 dark:border-slate-700/40">
-                        <span class="block text-center text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-400 mb-4"><?= htmlspecialchars(Translator::t('login.demo_heading')) ?></span>
+                        <span class="block text-center text-xs font-extrabold uppercase tracking-[0.15em] text-slate-400 mb-4"><?= htmlspecialchars(Translator::t('login.demo_heading')) ?></span>
                         <div class="flex flex-wrap justify-center gap-2.5 text-xs">
                             <button type="button" data-demo-username="admin"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-indigo-200/60 bg-indigo-50/50 hover:bg-indigo-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
-                                <span class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">A</span>
+                                <span class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-extrabold flex items-center justify-center shadow-sm">A</span>
                                 <span class="font-bold text-indigo-700"><?= htmlspecialchars(Translator::t('login.demo_admin')) ?></span>
                             </button>
                             <button type="button" data-demo-username="m.schmidt"
                                 class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200/60 bg-emerald-50/50 hover:bg-emerald-100 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0">
-                                <span class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-[10px] font-extrabold flex items-center justify-center shadow-sm">M</span>
+                                <span class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-xs font-extrabold flex items-center justify-center shadow-sm">M</span>
                                 <span class="font-bold text-emerald-700"><?= htmlspecialchars(Translator::t('login.demo_employee')) ?></span>
                             </button>
                         </div>
-                        <p class="text-[10px] text-slate-400 text-center mt-3"><?= htmlspecialchars(Translator::t('login.demo_note')) ?></p>
+                        <p class="text-xs text-slate-400 text-center mt-3"><?= htmlspecialchars(Translator::t('login.demo_note')) ?></p>
                     </div>
                 <?php endif; ?>
             </article>
 
             <!-- Trust Footer -->
-            <div class="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-slate-400/80 font-medium anim-delay-3">
+            <div class="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400/80 font-medium anim-delay-3">
                 <span class="inline-flex items-center gap-1.5"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> 256-bit TLS</span>
                 <span class="inline-flex items-center gap-1.5"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> DSGVO-konform</span>
                 <span class="inline-flex items-center gap-1.5"><svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Daten in Deutschland</span>
             </div>
 
-            <p class="text-center text-[10px] text-slate-500/60 mt-5 font-medium anim-delay-3"><?= htmlspecialchars(Translator::t('login.version')) ?></p>
+            <p class="text-center text-xs text-slate-500/60 mt-5 font-medium anim-delay-3"><?= htmlspecialchars(Translator::t('login.version')) ?></p>
         </div>
     </main>
 </body>

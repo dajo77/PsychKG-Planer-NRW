@@ -5739,7 +5739,6 @@ html.theming body *::after {
 }
 
 .input:focus {
-  outline: none;
   border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }

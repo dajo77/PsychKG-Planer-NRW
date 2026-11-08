@@ -751,19 +751,19 @@ $calTabParam = 'plan'; // always plan tab for the calendar
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 anim-stagger">
             <div class="kpi-card">
                 <div class="text-2xl font-bold text-slate-900" data-countup="<?= $employeeCount ?>" data-decimals="0"><?= $employeeCount ?></div>
-                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Mitarbeiter</div>
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Mitarbeiter</div>
             </div>
             <div class="kpi-card">
                 <div class="text-2xl font-bold text-indigo-600" data-countup="<?= $blockCount ?>" data-decimals="0"><?= $blockCount ?></div>
-                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Dienstblöcke</div>
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Dienstblöcke</div>
             </div>
             <div class="kpi-card">
                 <div class="text-2xl font-bold text-amber-600" data-countup="<?= $openTradeCount ?>" data-decimals="0"><?= $openTradeCount ?></div>
-                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Offene Tauschangebote</div>
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Offene Tauschangebote</div>
             </div>
             <div class="kpi-card">
                 <div class="text-2xl font-bold text-violet-600" data-countup="<?= $pendingCount ?>" data-decimals="0"><?= $pendingCount ?></div>
-                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Ausstehende Freigaben</div>
+                <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Ausstehende Freigaben</div>
             </div>
         </div>
 
@@ -778,7 +778,7 @@ $calTabParam = 'plan'; // always plan tab for the calendar
                     <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                     Tauschanträge
                     <?php if ($pendingCount > 0): ?>
-                        <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-violet-100 text-violet-700 font-bold"><?= $pendingCount ?></span>
+                        <span class="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-violet-100 text-violet-700 font-bold"><?= $pendingCount ?></span>
                     <?php endif; ?>
                 </button>
                 <button id="tabbtn-users" data-tab="tab-users" role="tab" aria-controls="tab-users" tabindex="<?= $tab === 'users' ? '0' : '-1' ?>" aria-selected="<?= $tab === 'users' ? 'true' : 'false' ?>" class="tab-btn px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition-all <?= $tab === 'users' ? 'text-indigo-700 border-indigo-600 bg-indigo-50/70' : 'text-slate-500 border-transparent hover:text-slate-700' ?>">
